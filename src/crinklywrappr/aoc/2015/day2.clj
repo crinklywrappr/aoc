@@ -7,23 +7,19 @@
   (->> (re-seq #"\d+" line)
        (mapv parse-long)))
 
-(defn wrap [[l w h :as dim]]
-  (let [[x y _] (sort < dim)]
-    (->> (+ (* l w) (* w h) (* h l))
-         (* 2) (+ (* x y)))))
-
 (defn part1 []
-  (letfn []
+  (letfn [(wrap [[l w h :as dim]]
+            (let [[x y _] (sort < dim)]
+              (->> (+ (* l w) (* w h) (* h l))
+                   (* 2) (+ (* x y)))))]
     (with-open [rdr (io/reader file)]
       (-> (map (comp wrap parse))
           (transduce + (line-seq rdr))))))
 
-(defn bow [dim]
-  (let [[x y z] (sort < dim)]
-    (+ x x y y (* x y z))))
-
 (defn part2 []
-  (letfn []
+  (letfn [(bow [dim]
+            (let [[x y z] (sort < dim)]
+              (+ x x y y (* x y z))))]
     (with-open [rdr (io/reader file)]
       (-> (map (comp bow parse))
           (transduce + (line-seq rdr))))))
