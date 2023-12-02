@@ -25,15 +25,14 @@
        (mapv parse-element)
        maximum-counts))
 
-(defn possible-game? [[_ {:keys [red green blue]}]]
-  (and (<= red 12) (<= green 13) (<= blue 14)))
-
 (defn part1 []
-  (with-open [rdr (io/reader file)]
-    (-> (comp (map parse-line)
-           (filter possible-game?)
-           (map first))
-        (transduce + (line-seq rdr)))))
+  (letfn [(possible-game? [[_ {:keys [red green blue]}]]
+            (and (<= red 12) (<= green 13) (<= blue 14)))]
+    (with-open [rdr (io/reader file)]
+      (-> (comp (map parse-line)
+             (filter possible-game?)
+             (map first))
+          (transduce + (line-seq rdr))))))
 
 (defn part2 []
   (letfn [(power [[_ reveals]]
