@@ -16,10 +16,10 @@
 
 (defn part2 []
   (with-open [rdr (io/reader file)]
-    (->> (util/char-seq rdr)
-         (util/reduce-while
-          (fn [[index floor]] (not= floor -1))
-          (fn [[index floor] character]
-            [(inc index) (change-floor floor character)])
-          [0 0])
-         first inc)))
+    (reduce
+     (fn [[index floor] character]
+       (let [new-floor (change-floor floor character)]
+         (if (== new-floor -1)
+           (reduced (inc index))
+           [(inc index) new-floor])))
+     [0 0] (util/char-seq rdr))))
