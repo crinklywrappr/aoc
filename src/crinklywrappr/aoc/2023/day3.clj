@@ -33,7 +33,9 @@
       (<= minimum (inc symbol) maximum)))
 
 (defn gear-ratio [numbers symbol]
-  (let [adjacent (apply concat (vals (filterv (partial number-adjacent? symbol) numbers)))]
+  (let [adjacent (->> numbers
+                      (filterv (partial number-adjacent? symbol))
+                      (mapcat second))]
     (if (== (count adjacent) 2)
       (apply * (mapv parse-long adjacent)) 0)))
 
