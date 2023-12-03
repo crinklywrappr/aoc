@@ -28,9 +28,8 @@
       (first (reduce part-numbers [0 wrap (first lines)] (rest lines))))))
 
 (defn number-adjacent? [symbol [[minimum maximum] _]]
-  (or (<= minimum (dec symbol) maximum)
-      (== symbol minimum)
-      (<= minimum (inc symbol) maximum)))
+  (or (<= (dec symbol) minimum (inc symbol))
+      (<= (dec symbol) maximum (inc symbol))))
 
 (defn gear-ratio [numbers symbol]
   (let [adjacent (->> numbers
