@@ -20,37 +20,37 @@
          (mapv (partial change-row action fx tx)))
     (subvec grid (inc to)))))
 
+(defn parse-line [line & {:keys [on off toggle]}]
+  (->> (re-seq rgx line)
+       ((fn [[action & coords]]
+          (cons (condp = action
+                  "on" on
+                  "off" off
+                  "toggle" toggle)
+                (mapv parse-long coords))))))
+
 (defn part1 []
-  (letfn [(parse-line [line]
-            (->> (re-seq rgx line)
-                 ((fn [[action & coords]]
-                    (cons (condp = action
-                            "off" (constantly -1)
-                            "on" (constantly 1)
-                            "toggle" (partial * -1))
-                          (mapv parse-long coords))))))]
-    (with-open [rdr (io/reader file)]
-      (let [grid (vec (repeat 1000 (vec (repeat 1000 -1))))]
-        (->> rdr line-seq
-             (mapv parse-line)
-             (reduce change-grid grid)
-             (mapcat identity)
-             (filter pos?)
-             count)))))
+  (with-open [rdr (io/reader file)]
+    (let [grid (vec (repeat 1000 (vec (repeat 1000 -1))))]
+      (->> rdr line-seq
+           (mapv #(parse-line
+                   % :on (constantly 1)
+                   :off (constantly -1)
+                   :toggle (partial * -1)))
+           (reduce change-grid grid)
+           (mapcat identity)
+           (filter pos?)
+           count))))
 
 (defn part2 []
-  (letfn [(parse-line [line]
-            (->> (re-seq rgx line)
-                 ((fn [[action & coords]]
-                    (cons (condp = action
-                            "off" (fn [brightness] (max 0 (dec brightness)))
-                            "on" inc
-                            "toggle" (partial + 2))
-                          (mapv parse-long coords))))))]
-    (with-open [rdr (io/reader file)]
-      (let [grid (vec (repeat 1000 (vec (repeat 1000 0))))]
-        (->> rdr line-seq
-             (mapv parse-line)
-             (reduce change-grid grid)
-             (mapcat identity)
-             (apply +))))))
+  (with-open [rdr (io/reader file)]
+    (let [grid (vec (repeat 1000 (vec (repeat 1000 0))))]
+      (->> rdr line-seq
+           (mapv #(parse-line
+                   % :on inc
+                   :off (fn [brightness]
+                          (max 0 (dec brightness)))
+                   :toggle (partial + 2)))
+           (reduce change-grid grid)
+           (mapcat identity)
+           (apply +)))))
