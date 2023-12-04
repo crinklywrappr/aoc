@@ -5,7 +5,7 @@
             [crinklywrappr.aoc.util :as util]))
 
 (def file (io/resource "2023/day4.txt"))
-(def winning 10) ;; switch to 5 for the example input
+(def winning 10) ;; switch to 5 for example input
 
 (def rgx #"\d+")
 
@@ -24,6 +24,8 @@
       (-> (map (comp score-card parse-line))
           (transduce + (line-seq rdr))))))
 
+;; i got lucky that my puzzle input didn't
+;; add fake cards past the end of the file
 (defn part2 []
   (letfn [(score-card [[card winning scratched]]
             [card (count (st/intersection winning scratched))])
