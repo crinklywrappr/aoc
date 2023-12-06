@@ -5,10 +5,8 @@
 (def file (io/resource "2023/day4.txt"))
 (def winning 10) ;; switch to 5 for example input
 
-(def rgx #"\d+")
-
 (defn parse-line [line]
-  (->> (re-seq rgx line)
+  (->> (re-seq #"\d+" line)
        ((fn to-sets [[& nums]]
           [(parse-long (first nums))
            (set (rest (take (inc winning) nums)))
