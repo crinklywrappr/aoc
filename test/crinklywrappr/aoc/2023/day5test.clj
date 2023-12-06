@@ -1,4 +1,4 @@
-(ns crinklywrappr.aoc-test
+(ns crinklywrappr.aoc.2023.day5test
   (:require [clojure.test :refer :all]
             [crinklywrappr.aoc.2023.day5 :as d5]))
 
