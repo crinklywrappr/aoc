@@ -1,8 +1,6 @@
 (ns crinklywrappr.aoc.2023.day4
   (:require [clojure.set :as st]
-            [clojure.java.io :as io]
-            [clojure.core.reducers :as r]
-            [crinklywrappr.aoc.util :as util]))
+            [clojure.java.io :as io]))
 
 (def file (io/resource "2023/day4.txt"))
 (def winning 10) ;; switch to 5 for example input
