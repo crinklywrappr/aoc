@@ -56,5 +56,5 @@
       (->> (re-seq #"\d+" line)
            (map parse-long)
            (partition 2))))
-   (mapv first)
-   (apply min)))
+   (apply min-key first)
+   first))
