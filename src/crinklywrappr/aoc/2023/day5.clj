@@ -1,20 +1,19 @@
 (ns crinklywrappr.aoc.2023.day5
   (:require [clojure.string :as sg]
-            [clojure.java.io :as io]
-            [crinklywrappr.aoc.util :as util]))
+            [clojure.java.io :as io]))
 
 (def file (io/resource "2023/day5.txt"))
 
 (defn advance [lines]
-  (rest (drop-while #(not (sg/ends-with? % ":")) lines)))
+  (rest (drop-while #(and (some? %) (not (sg/ends-with? % ":"))) lines)))
 
 (defn locations [lookup-values read-seeds]
   (with-open [rdr (io/reader file)]
-    (let [[line & lines] (util/wrap-line-seq rdr ":")]
+    (let [[line & lines] (line-seq rdr)]
       (loop [[found not-found] [[] (read-seeds line)]
              [line & lines] (drop 2 lines)]
         (cond
-          (or (= line ":") (nil? line)) (concat found not-found)
+          (nil? line) (concat found not-found)
           (empty? line) (recur [[] (concat found not-found)] (rest lines))
           (empty? not-found) (recur [[] (concat found not-found)] (advance lines))
           :else (let [[dst src len] (mapv parse-long (re-seq #"\d+" line))]
