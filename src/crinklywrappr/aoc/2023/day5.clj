@@ -8,7 +8,7 @@
 (defn advance [lines]
   (rest (drop-while #(not (sg/ends-with? % ":")) lines)))
 
-(defn lowest-location [lookup-values read-seeds]
+(defn locations [lookup-values read-seeds]
   (with-open [rdr (io/reader file)]
     (let [[line & lines] (util/wrap-line-seq rdr ":")]
       (loop [[found not-found] [[] (read-seeds line)]
@@ -22,7 +22,7 @@
 
 (defn part1 []
   (->>
-   (lowest-location
+   (locations
     (fn lookup-values [dst src len]
       (fn lookup-values' [[found not-found] n]
         (if (and (<= src n) (< n (+ src len)))
@@ -51,7 +51,7 @@
 
 (defn part2 []
   (->>
-   (lowest-location
+   (locations
     lookup-values
     (fn read-seeds [line]
       (->> (re-seq #"\d+" line)
