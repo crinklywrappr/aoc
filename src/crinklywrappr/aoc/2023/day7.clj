@@ -38,6 +38,16 @@
                   (> sa sb) 1
                   :else 0))))))
 
+(defn total-winnings [hand-type score-cards]
+  (with-open [rdr (io/reader file)]
+    (->> rdr line-seq
+         (mapv parse)
+         (sort (compare-hands
+                (memoize hand-type)
+                (memoize score-cards)))
+         (map-indexed winnings)
+         (apply +))))
+
 (defn part1 []
   (letfn [(hand-type [[hand _]]
             (-> hand frequencies
@@ -50,14 +60,7 @@
                 (sg/replace "J" "B")
                 (sg/replace "T" "A")
                 parse-hex))]
-    (with-open [rdr (io/reader file)]
-      (->> rdr line-seq
-           (mapv parse)
-           (sort (compare-hands
-                  (memoize hand-type)
-                  (memoize score-cards)))
-           (map-indexed winnings)
-           (apply +)))))
+    (total-winnings hand-type score-cards)))
 
 (defn part2 []
   (letfn [(hand-type [[hand _]]
@@ -83,11 +86,4 @@
                 (sg/replace "J" "1")
                 (sg/replace "T" "A")
                 parse-hex))]
-    (with-open [rdr (io/reader file)]
-      (->> rdr line-seq
-           (mapv parse)
-           (sort (compare-hands
-                  (memoize hand-type)
-                  (memoize score-cards)))
-           (map-indexed winnings)
-           (apply +)))))
+    (total-winnings hand-type score-cards)))
