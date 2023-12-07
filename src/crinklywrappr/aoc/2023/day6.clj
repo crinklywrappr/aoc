@@ -25,8 +25,8 @@
 ;; all of the record times can be beaten
 (defn solve-race [[d record]]
   (let [m (mid 0 d)]
-    [(solve-left d record 0 m)
-     (solve-right d record m d)]))
+    (inc (- (solve-right d record m d)
+            (solve-left d record 0 m)))))
 
 (defn part1 []
   (->> "2023/day6.txt"
@@ -36,8 +36,7 @@
        (partition 4)
        (apply interleave)
        (partition 2)
-       (mapv (comp inc (partial apply -)
-                reverse solve-race))
+       (map solve-race)
        (apply *)))
 
 (defn part2 []
@@ -46,8 +45,5 @@
        (re-seq #"\d+")
        (partition 4)
        (map (comp parse-long
-                  (partial apply str)))
-       solve-race
-       reverse
-       (apply -)
-       inc))
+               (partial apply str)))
+       solve-race))
