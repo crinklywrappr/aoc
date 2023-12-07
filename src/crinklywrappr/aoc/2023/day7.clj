@@ -49,41 +49,41 @@
          (apply +))))
 
 (defn part1 []
-  (letfn [(hand-type [[hand _]]
-            (-> hand frequencies
-                vals vec hand-type'))
-          (score-cards [[hand _]]
-            (-> hand
-                (sg/replace "A" "E")
-                (sg/replace "K" "D")
-                (sg/replace "Q" "C")
-                (sg/replace "J" "B")
-                (sg/replace "T" "A")
-                parse-hex))]
-    (total-winnings hand-type score-cards)))
+  (total-winnings
+   (fn hand-type [[hand _]]
+     (-> hand frequencies
+         vals vec hand-type'))
+   (fn score-cards [[hand _]]
+     (-> hand
+         (sg/replace "A" "E")
+         (sg/replace "K" "D")
+         (sg/replace "Q" "C")
+         (sg/replace "J" "B")
+         (sg/replace "T" "A")
+         parse-hex))))
 
 (defn part2 []
-  (letfn [(hand-type [[hand _]]
-            (let [freqs (frequencies hand)
-                  jokers (get freqs \J)
-                  score (-> freqs vals vec
-                            hand-type')]
-              (case [(some? jokers) score]
-                [true 5] 6
-                [true 4] 6
-                [true 3] 5
-                [true 1] 3
-                [true 0] 1
-                (case [jokers score]
-                  [2 2] 5
-                  [1 2] 4
-                  score))))
-          (score-cards [[hand _]]
-            (-> hand
-                (sg/replace "A" "D")
-                (sg/replace "K" "C")
-                (sg/replace "Q" "B")
-                (sg/replace "J" "1")
-                (sg/replace "T" "A")
-                parse-hex))]
-    (total-winnings hand-type score-cards)))
+  (total-winnings
+   (fn hand-type [[hand _]]
+     (let [freqs (frequencies hand)
+           jokers (get freqs \J)
+           score (-> freqs vals vec
+                     hand-type')]
+       (case [(some? jokers) score]
+         [true 5] 6
+         [true 4] 6
+         [true 3] 5
+         [true 1] 3
+         [true 0] 1
+         (case [jokers score]
+           [2 2] 5
+           [1 2] 4
+           score))))
+   (fn score-cards [[hand _]]
+     (-> hand
+         (sg/replace "A" "D")
+         (sg/replace "K" "C")
+         (sg/replace "Q" "B")
+         (sg/replace "J" "1")
+         (sg/replace "T" "A")
+         parse-hex))))
