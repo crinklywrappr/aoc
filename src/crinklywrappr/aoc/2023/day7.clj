@@ -14,7 +14,8 @@
     [hand (parse-long bid)]))
 
 (defn hand-type' [card-freqs]
-  (case [(apply max card-freqs) (count card-freqs)]
+  (case [(apply max card-freqs)
+         (count card-freqs)]
     [5 1] 6
     [4 2] 5
     [3 2] 4
