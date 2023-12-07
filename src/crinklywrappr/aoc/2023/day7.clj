@@ -61,16 +61,16 @@
 (defn part2 []
   (letfn [(hand-type [[hand _]]
             (let [freqs (frequencies hand)
-                  jacks (get freqs \J)
+                  jokers (get freqs \J)
                   score (-> freqs vals vec
                             hand-type')]
-              (case [(some? jacks) score]
+              (case [(some? jokers) score]
                 [true 5] 6
                 [true 4] 6
                 [true 3] 5
                 [true 1] 3
                 [true 0] 1
-                (case [jacks score]
+                (case [jokers score]
                   [2 2] 5
                   [1 2] 4
                   score))))
