@@ -1,8 +1,13 @@
-(ns crinklywrappr.aoc.2023.day5
+(ns crinklywrappr.aoc.2023.day6
   (:require [clojure.java.io :as io]))
 
 (defn f [d x] (* x (- d x)))
 (defn mid [left right] (+ left (long (/ (- right left) 2))))
+
+(def input
+  (->> "2023/day6.txt"
+       io/resource slurp
+       (re-seq #"\d+")))
 
 (defn solve-left [d record left right]
   (loop [l left r right]
@@ -29,9 +34,7 @@
             (solve-left d record 0 m)))))
 
 (defn part1 []
-  (->> "2023/day6.txt"
-       io/resource slurp
-       (re-seq #"\d+")
+  (->> input
        (map parse-long)
        (partition 4)
        (apply interleave)
@@ -40,9 +43,7 @@
        (apply *)))
 
 (defn part2 []
-  (->> "2023/day6.txt"
-       io/resource slurp
-       (re-seq #"\d+")
+  (->> input
        (partition 4)
        (map (comp parse-long
                (partial apply str)))
