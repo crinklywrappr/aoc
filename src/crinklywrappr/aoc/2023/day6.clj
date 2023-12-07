@@ -1,15 +1,6 @@
 (ns crinklywrappr.aoc.2023.day5
   (:require [clojure.java.io :as io]))
 
-(def input
-  (->> "2023/day6.txt"
-       io/resource slurp
-       (re-seq #"\d+")
-       (map parse-long)
-       (partition 4)
-       (apply interleave)
-       (partition 2)))
-
 (defn f [d x] (* x (- d x)))
 (defn mid [left right] (+ left (long (/ (- right left) 2))))
 
