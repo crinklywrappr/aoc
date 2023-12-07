@@ -5,7 +5,9 @@
 (def file (io/resource "2023/day7.txt"))
 
 (defn winnings [idx [_ bid]] (* bid (inc idx)))
-(defn parse-hex [hex-str] (Long/parseLong hex-str 16))
+
+(defn parse-hex [hex-str]
+  (Long/parseLong hex-str 16))
 
 (defn parse [line]
   (let [[hand bid] (sg/split line #" ")]
