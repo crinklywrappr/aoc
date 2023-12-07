@@ -14,19 +14,14 @@
     [hand (parse-long bid)]))
 
 (defn hand-type' [card-freqs]
-  (case card-freqs
-    [5] 6
-    [4 1] 5
-    [1 4] 5
+  (case [(apply max card-freqs) (count card-freqs)]
+    [5 1] 6
+    [4 2] 5
     [3 2] 4
-    [2 3] 4
-    [3 1 1] 3
-    [1 3 1] 3
-    [1 1 3] 3
-    (case (count card-freqs)
-      3 2
-      4 1
-      5 0)))
+    [3 3] 3
+    [2 3] 2
+    [2 4] 1
+    [1 5] 0))
 
 (defn compare-hands [hand-type score-cards]
   (fn compare-cards' [a b]
