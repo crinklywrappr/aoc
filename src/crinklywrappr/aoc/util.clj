@@ -25,3 +25,22 @@
       (if (.find m)
         (recur m (assoc res (.start m) (.group m)))
         res))))
+
+(defn gcd
+  ([] 0)
+  ([x] x)
+  ([x y]
+   (if (zero? y)
+     x
+     (recur y (mod x y))))
+  ([x y & more]
+   (reduce gcd (gcd x y) more)))
+
+(defn lcm
+  ([] 1)
+  ([x] x)
+  ([x y]
+   (/ (abs (*' x y))
+      (gcd x y)))
+  ([x y & more]
+   (reduce lcm (lcm x y) more)))
