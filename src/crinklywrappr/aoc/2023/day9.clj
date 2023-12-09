@@ -17,7 +17,8 @@
   (mapv rsub (partition 2 1 nums)))
 
 (defn continue [nums]
-  (->> (iteration changes :somef all-zero? :vf last :initk nums)
+  (->> (iteration changes :somef all-zero?
+                  :vf last :initk nums)
        (reduce + (last nums))))
 
 (defn part1 []
@@ -26,7 +27,8 @@
         (transduce + (line-seq rdr)))))
 
 (defn rcontinue [nums]
-  (->> (iteration changes :somef all-zero? :vf first :initk nums)
+  (->> (iteration changes :somef all-zero?
+                  :vf first :initk nums)
        reverse (reduce rsub) (- (first nums))))
 
 (defn part2 []
