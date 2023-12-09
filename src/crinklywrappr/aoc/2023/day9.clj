@@ -8,8 +8,7 @@
 
 (defn rsub [[a b]] (- b a))
 
-(defn all-zero? [nums]
-  (not-every? zero? nums))
+(defn all-zero? [nums] (not-every? zero? nums))
 
 (defn changes [nums]
   (mapv rsub (partition 2 1 nums)))
@@ -19,12 +18,12 @@
                   :vf last :initk nums)
        (reduce + (last nums))))
 
-(defn part1 []
+(defn solve [f]
   (with-open [rdr (io/reader file)]
-    (-> (map (comp continue parse-line))
-        (transduce + (line-seq rdr)))))
+    (-> (map f) (transduce + (line-seq rdr)))))
+
+(defn part1 []
+  (solve (comp continue parse-line)))
 
 (defn part2 []
-  (with-open [rdr (io/reader file)]
-    (-> (map (comp continue reverse parse-line))
-        (transduce + (line-seq rdr)))))
+  (solve (comp continue reverse parse-line)))
