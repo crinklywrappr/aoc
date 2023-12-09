@@ -20,7 +20,7 @@
 
 (defn solve [f]
   (with-open [rdr (io/reader file)]
-    (-> (map f) (transduce + (line-seq rdr)))))
+    (transduce (map f) + (line-seq rdr))))
 
 (defn part1 []
   (solve (comp continue parse-line)))
