@@ -6,9 +6,7 @@
 (defn parse-line [line]
   (mapv parse-long (.split line " ")))
 
-(defn rsub
-  ([a b] (- b a))
-  ([[a b]] (- b a)))
+(defn rsub [[a b]] (- b a))
 
 (defn all-zero? [nums]
   (not-every? zero? nums))
@@ -26,12 +24,7 @@
     (-> (map (comp continue parse-line))
         (transduce + (line-seq rdr)))))
 
-(defn rcontinue [nums]
-  (->> (iteration changes :somef all-zero?
-                  :vf first :initk nums)
-       reverse (reduce rsub) (- (first nums))))
-
 (defn part2 []
   (with-open [rdr (io/reader file)]
-    (-> (map (comp rcontinue parse-line))
+    (-> (map (comp continue reverse parse-line))
         (transduce + (line-seq rdr)))))
