@@ -1,7 +1,5 @@
 (ns crinklywrappr.aoc.2023.day9
-  (:require [clojure.string :as sg]
-            [clojure.java.io :as io]
-            [crinklywrappr.aoc.util :as util]))
+  (:require [clojure.java.io :as io]))
 
 (def file (io/resource "2023/day9.txt"))
 
