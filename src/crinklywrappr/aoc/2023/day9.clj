@@ -8,12 +8,19 @@
 (defn parse-line [line]
   (mapv parse-long (.split line " ")))
 
+(defn rsub
+  ([a b] (- b a))
+  ([[a b]] (- b a)))
+
+(defn all-zero? [nums]
+  (not-every? zero? nums))
+
+(defn changes [nums]
+  (mapv rsub (partition 2 1 nums)))
+
 (defn continue [nums]
-  (letfn [(rsub [[a b]] (- b a))
-          (somef [nums] (not-every? zero? nums))
-          (stepf [nums] (mapv rsub (partition 2 1 nums)))]
-    (->> (iteration stepf :somef somef :vf last :initk nums)
-         (reduce + (last nums)))))
+  (->> (iteration changes :somef all-zero? :vf last :initk nums)
+       (reduce + (last nums))))
 
 (defn part1 []
   (with-open [rdr (io/reader file)]
@@ -21,13 +28,8 @@
         (transduce + (line-seq rdr)))))
 
 (defn rcontinue [nums]
-  (letfn [(rsub [[a b]] (- b a))
-          (somef [nums] (not-every? zero? nums))
-          (stepf [nums] (mapv rsub (partition 2 1 nums)))]
-    (as-> (iteration stepf :somef somef :vf first :initk nums) $
-      (reverse $) (vec $)
-      (conj $ (first nums))
-      (reduce (comp rsub vector) $))))
+  (->> (iteration changes :somef all-zero? :vf first :initk nums)
+       reverse (reduce rsub) (- (first nums))))
 
 (defn part2 []
   (with-open [rdr (io/reader file)]
