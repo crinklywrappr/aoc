@@ -70,8 +70,7 @@
 (defn count-enclosed-tiles [bounds]
   (letfn [(dist [[[_ x1] [x2 _]]] (- x2 x1 1))]
     (->> bounds sort (partition 2)
-         (partition 2 1) (mapv dist)
-         (apply +))))
+         (partition 2 1) (mapv dist))))
 
 ;; requires special case when S is in the
 ;; middle of two vertical or horizontal pipes,
@@ -83,6 +82,6 @@
        (if (vector? state)
          (recur (update-bounds row-bounds pipe row col) state)
          (update-bounds row-bounds pipe row col))))
-   vals (map count-enclosed-tiles) (apply +)))
+   vals (map count-enclosed-tiles) flatten (apply +)))
 
 ;; 1294 <= too high
