@@ -67,14 +67,25 @@
     \│ (update row-bounds row conj col col)
     (update row-bounds row conj col)))
 
-(defn count-enclosed-tiles [bounds]
-  (letfn [(dist [[[_ x1] [x2 _]]] (- x2 x1 1))]
-    (->> bounds sort (partition 2)
-         (partition 2 1) (mapv dist))))
+(defn vertical-pipe? [row col1 col2]
+  (case [(pipe-at [row col1]) (pipe-at [row col2])]
+    [\┌ \┘] true
+    [\└ \┐] true
+    [\S \┐] true ;; handle your special S case here
+    (== col1 col2)))
+
+(defn count-enclosed-tiles [[row bounds]]
+  (first
+   (reduce
+    (fn step [[tiles ray last-pipe] [col1 col2]]
+      [(if (odd? ray) (+ tiles (- col1 last-pipe 1)) tiles)
+       (if (vertical-pipe? row col1 col2) (inc ray) (+ ray 2))
+       col2])
+    [0 0 0] (->> bounds sort (partition 2)))))
 
 ;; requires special case when S is in the
-;; middle of two vertical or horizontal pipes,
-;; but my input file didn't require it
+;; middle of two horizontal pipes, but my
+;; input file didn't require it
 (defn part2 []
   (->>
    (loop [row-bounds {} [[row col] turns dir pipe] (init-state)]
@@ -82,6 +93,4 @@
        (if (vector? state)
          (recur (update-bounds row-bounds pipe row col) state)
          (update-bounds row-bounds pipe row col))))
-   vals (map count-enclosed-tiles) flatten (apply +)))
-
-;; 1294 <= too high
+   (mapv count-enclosed-tiles) (apply +)))
