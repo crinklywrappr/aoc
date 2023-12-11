@@ -1,4 +1,6 @@
 (ns crinklywrappr.aoc.util
+  (:require [clojure.string :as sg]
+            [clojure.core.reducers :as r])
   (:import [java.io BufferedReader]))
 
 (defn char-seq
@@ -25,6 +27,15 @@
       (if (.find m)
         (recur m (assoc res (.start m) (.group m)))
         res))))
+
+(defn string-indices
+  ([sub s]
+   (string-indices sub s (count sub)))
+  ([sub s adv]
+   (->> (iteration
+         (fn [from] (sg/index-of s sub from))
+         :kf #(+ % adv) :initk 0)
+        (r/fold conj))))
 
 (defn gcd
   ([] 0)
