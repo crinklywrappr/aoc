@@ -30,8 +30,8 @@
           [galaxies empty-columns] (reduce (index-galaxies expansion) [[] empty-columns 0] lines)]
       (reduce (update-columns (dec expansion)) galaxies (sort > empty-columns)))))
 
-(defn part1 []
-  (let [galaxies (read-galaxy-map 2)]
+(defn solve [expansion]
+  (let [galaxies (read-galaxy-map expansion)]
     (->>
      (for [[i1 [r1 c1]] (map-indexed vector galaxies)
            [i2 [r2 c2]] (map-indexed vector galaxies)
@@ -39,11 +39,6 @@
        (+ (- r2 r1) (abs (- c2 c1))))
      (apply +))))
 
-(defn part2 []
-  (let [galaxies (read-galaxy-map 1000000)]
-    (->>
-     (for [[i1 [r1 c1]] (map-indexed vector galaxies)
-           [i2 [r2 c2]] (map-indexed vector galaxies)
-           :when (< i1 i2)]
-       (+ (- r2 r1) (abs (- c2 c1))))
-     (apply +))))
+(defn part1 [] (solve 2))
+
+(defn part2 [] (solve 1000000))
