@@ -32,10 +32,9 @@
   ([sub s]
    (string-indices sub s (count sub)))
   ([sub s adv]
-   (->> (iteration
-         (fn [from] (sg/index-of s sub from))
-         :kf #(+ % adv) :initk 0)
-        (r/fold conj))))
+   (iteration
+    (fn [from] (sg/index-of s sub from))
+    :kf #(+ % adv) :initk 0)))
 
 (defn gcd
   ([] 0)
