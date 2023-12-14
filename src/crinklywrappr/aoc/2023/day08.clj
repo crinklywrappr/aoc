@@ -1,9 +1,9 @@
-(ns crinklywrappr.aoc.2023.day8
+(ns crinklywrappr.aoc.2023.day08
   (:require [clojure.string :as sg]
             [clojure.java.io :as io]
             [crinklywrappr.aoc.util :as util]))
 
-(def file (io/resource "2023/day8.txt"))
+(def file (io/resource "2023/day08.txt"))
 
 (defn parse-line [line]
   (let [[k l r] (re-seq #"[1-9A-Z]+" line)]

@@ -1,7 +1,7 @@
-(ns crinklywrappr.aoc.2023.day9
+(ns crinklywrappr.aoc.2023.day09
   (:require [clojure.java.io :as io]))
 
-(def file (io/resource "2023/day9.txt"))
+(def file (io/resource "2023/day09.txt"))
 
 (defn parse-line [line]
   (mapv parse-long (.split line " ")))

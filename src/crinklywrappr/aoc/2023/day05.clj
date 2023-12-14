@@ -1,8 +1,8 @@
-(ns crinklywrappr.aoc.2023.day5
+(ns crinklywrappr.aoc.2023.day05
   (:require [clojure.string :as sg]
             [clojure.java.io :as io]))
 
-(def file (io/resource "2023/day5.txt"))
+(def file (io/resource "2023/day05.txt"))
 
 (defn advance [lines]
   (rest (drop-while #(and (some? %) (not (sg/ends-with? % ":"))) lines)))

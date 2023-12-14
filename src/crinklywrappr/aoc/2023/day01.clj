@@ -1,7 +1,7 @@
-(ns crinklywrappr.aoc.2023.day1
+(ns crinklywrappr.aoc.2023.day01
   (:require [clojure.java.io :as io]))
 
-(def file (io/resource "2023/day1.txt"))
+(def file (io/resource "2023/day01.txt"))
 
 (defn part1 []
   (with-open [rdr (io/reader file)]

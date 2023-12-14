@@ -1,11 +1,11 @@
-(ns crinklywrappr.aoc.2023.day6
+(ns crinklywrappr.aoc.2023.day06
   (:require [clojure.java.io :as io]))
 
 (defn f [d x] (* x (- d x)))
 (defn mid [left right] (+ left (long (/ (- right left) 2))))
 
 (def input
-  (->> "2023/day6.txt"
+  (->> "2023/day06.txt"
        io/resource slurp
        (re-seq #"\d+")))
 

@@ -1,7 +1,7 @@
-(ns crinklywrappr.aoc.2023.day2
+(ns crinklywrappr.aoc.2023.day02
   (:require [clojure.java.io :as io]))
 
-(def file (io/resource "2023/day2.txt"))
+(def file (io/resource "2023/day02.txt"))
 
 (def regex #"\d+|red|green|blue")
 

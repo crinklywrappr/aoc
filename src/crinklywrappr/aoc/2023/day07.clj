@@ -1,8 +1,8 @@
-(ns crinklywrappr.aoc.2023.day7
+(ns crinklywrappr.aoc.2023.day07
   (:require [clojure.java.io :as io]
             [clojure.string :as sg]))
 
-(def file (io/resource "2023/day7.txt"))
+(def file (io/resource "2023/day07.txt"))
 
 (defn winnings [idx [_ bid]] (* bid (inc idx)))
 

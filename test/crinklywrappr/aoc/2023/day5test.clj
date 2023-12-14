@@ -1,6 +1,6 @@
 (ns crinklywrappr.aoc.2023.day5test
   (:require [clojure.test :refer :all]
-            [crinklywrappr.aoc.2023.day5 :as d5]))
+            [crinklywrappr.aoc.2023.day05 :as d5]))
 
 (deftest lookup-values-part2
   (let [f (d5/lookup-values 0 50 10)]

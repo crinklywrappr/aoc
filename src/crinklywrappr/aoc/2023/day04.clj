@@ -1,8 +1,8 @@
-(ns crinklywrappr.aoc.2023.day4
+(ns crinklywrappr.aoc.2023.day04
   (:require [clojure.set :as st]
             [clojure.java.io :as io]))
 
-(def file (io/resource "2023/day4.txt"))
+(def file (io/resource "2023/day04.txt"))
 (def winning 10) ;; switch to 5 for example input
 
 (defn parse-line [line]

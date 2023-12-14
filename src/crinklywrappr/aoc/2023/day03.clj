@@ -1,8 +1,8 @@
-(ns crinklywrappr.aoc.2023.day3
+(ns crinklywrappr.aoc.2023.day03
   (:require [clojure.java.io :as io]
             [crinklywrappr.aoc.util :as util]))
 
-(def file (io/resource "2023/day3.txt"))
+(def file (io/resource "2023/day03.txt"))
 
 (def syms #"[^\d.]")
 (def nums #"\d+")
