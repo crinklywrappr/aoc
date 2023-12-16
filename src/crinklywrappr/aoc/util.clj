@@ -54,3 +54,6 @@
       (gcd x y)))
   ([x y & more]
    (reduce lcm (lcm x y) more)))
+
+(defn set-char-at [string index character]
+  (apply str (-> string seq vec (assoc index character))))
