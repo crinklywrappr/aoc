@@ -24,7 +24,7 @@
 
 (defn sum-focusing-power [labels]
   (fn sum-focusing-power' [total [box lenses]]
-    (first (reduce (focusing-power labels) [total box 0] (reverse lenses)))))
+    (first (reduce (focusing-power labels) [total box 0] lenses))))
 
 (defn part2 []
   (with-open [rdr (io/reader file)]
@@ -36,7 +36,7 @@
          \= [labels boxes label box]
          \- [(dissoc labels label)
              (if (contains? labels label)
-               (update boxes box (partial remove #(= label %)))
+               (update boxes box (partial filterv #(not= label %)))
                boxes)
              "" 0]
          (let [n (byte c)]
@@ -46,6 +46,6 @@
               (cond
                 (contains? labels label) boxes
                 (contains? boxes box) (update boxes box conj label)
-                :else (assoc boxes box (list label)))
+                :else (assoc boxes box [label]))
               "" 0]))))
      [{} {} "" 0] (util/char-seq rdr))))
