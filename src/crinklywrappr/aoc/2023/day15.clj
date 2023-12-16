@@ -17,34 +17,34 @@
          [total (calc-score score (byte c))]))
      [0 0] (util/char-seq rdr))))
 
-(defn focusing-power [lenses]
-  (fn focusing-power' [[total idx] label]
-    (let [[box focal-length] (get lenses label)]
-      [(+ total (* (inc box) (inc idx) focal-length)) (inc idx)])))
+(defn focusing-power [labels]
+  (fn focusing-power' [[total box idx] label]
+    (let [focal-length (get labels label)]
+      [(+ total (* (inc box) (inc idx) focal-length)) box (inc idx)])))
 
-(defn sum-focusing-power [lenses]
-  (fn sum-focusing-power' [total box]
-    (first (reduce (focusing-power lenses) [total 0] (reverse box)))))
+(defn sum-focusing-power [labels]
+  (fn sum-focusing-power' [total [box lenses]]
+    (first (reduce (focusing-power labels) [total box 0] (reverse lenses)))))
 
 (defn part2 []
   (with-open [rdr (io/reader file)]
     (reduce
-     (fn f [[lenses boxes label box] c]
+     (fn f [[labels boxes label box] c]
        (case c
-         \newline (reduced (reduce (sum-focusing-power lenses) 0 (vals boxes)))
-         \, [lenses boxes label box]
-         \= [lenses boxes label box]
-         \- [(dissoc lenses label)
-             (if (contains? lenses label)
+         \newline (reduced (reduce (sum-focusing-power labels) 0 boxes))
+         \, [labels boxes label box]
+         \= [labels boxes label box]
+         \- [(dissoc labels label)
+             (if (contains? labels label)
                (update boxes box (partial remove #(= label %)))
                boxes)
              "" 0]
          (let [n (byte c)]
            (if (> n 96)
-             [lenses boxes (str label c) (calc-score box n)]
-             [(assoc lenses label [box (- n 48)])
+             [labels boxes (str label c) (calc-score box n)]
+             [(assoc labels label (- n 48))
               (cond
-                (contains? lenses label) boxes
+                (contains? labels label) boxes
                 (contains? boxes box) (update boxes box conj label)
                 :else (assoc boxes box (list label)))
               "" 0]))))
