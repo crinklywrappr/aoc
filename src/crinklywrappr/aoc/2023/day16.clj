@@ -79,14 +79,14 @@
       :else [(mark input row col dir) visited-obstacles (conj rays (new-state row col dir))])))
 
 ;; 2r0001 is east, 2r0010 south, etc
-(defn solve [row col dir]
+(defn solve [[row col dir]]
   (loop [input input visited-obstacles {} rays [[row col dir]]]
     (if (empty? rays)
       (->> input (mapcat identity) (filterv #(< (byte %) 16)) count (+ (count visited-obstacles)))
       (let [[new-input new-visited-obstacles new-rays] (reduce follow-ray [input visited-obstacles []] rays)]
         (recur new-input new-visited-obstacles new-rays)))))
 
-(defn part1 [] (solve 0 0 2r0001))
+(defn part1 [] (solve [0 0 2r0001]))
 
 (defn part2 []
   (let [max-row (count input)
@@ -114,5 +114,5 @@
          (zero? col) [[row col 2r0001]]
          (== col (dec max-col)) [[row col 2r0100]]))
      (mapcat identity)
-     (pmap (partial apply solve))
+     (pmap solve)
      (apply max))))
