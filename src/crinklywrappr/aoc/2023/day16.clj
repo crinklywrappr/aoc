@@ -1,20 +1,21 @@
 (ns crinklywrappr.aoc.2023.day16
-  (:require [clojure.string :as sg]
-            [clojure.java.io :as io]
-            [crinklywrappr.aoc.util :as util]))
+  (:require [clojure.java.io :as io]))
 
 (def file (io/resource "2023/day16.txt"))
 
 (def input
   (with-open [rdr (io/reader file)]
-    (mapv identity (line-seq rdr))))
+    (mapv vec (line-seq rdr))))
 
 (defn char-at [input visited-obstacles row col]
   (when-let [c (get-in input [row col])]
-    [c (long c) (get visited-obstacles [row col] 0)]))
+    [c (byte c) (get visited-obstacles [row col] 0)]))
 
-(defn energize [input row col new-state]
-  (update input row util/set-char-at col new-state))
+(defn energize [input row col dir]
+  (assoc-in input [row col] (char dir)))
+
+(defn mark [input row col dir]
+  (update-in input [row col] (comp char (partial bit-or dir) byte)))
 
 (defn reflect [dir c]
   (case [dir c]
@@ -73,15 +74,15 @@
       (or (= c \|) (= c \-))
       [input (update visited-obstacles [row col] bit-or dir) (conj rays (new-state row col dir))]
 
-      (= c \.) [(energize input row col (char dir)) visited-obstacles (conj rays (new-state row col dir))]
+      (= c \.) [(energize input row col dir) visited-obstacles (conj rays (new-state row col dir))]
 
-      :else [(energize input row col (char (bit-or dir passes))) visited-obstacles (conj rays (new-state row col dir))])))
+      :else [(mark input row col dir) visited-obstacles (conj rays (new-state row col dir))])))
 
 ;; 2r0001 is east, 2r0010 south, etc
 (defn solve [row col dir]
   (loop [input input visited-obstacles {} rays [[row col dir]]]
     (if (empty? rays)
-      (->> (sg/join input) (filterv #(< (byte %) 16)) count (+ (count visited-obstacles)))
+      (->> input (mapcat identity) (filterv #(< (byte %) 16)) count (+ (count visited-obstacles)))
       (let [[new-input new-visited-obstacles new-rays] (reduce follow-ray [input visited-obstacles []] rays)]
         (recur new-input new-visited-obstacles new-rays)))))
 
