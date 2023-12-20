@@ -23,9 +23,6 @@
     (if (= (zip/node nd) search)
       nd (recur (zip/right nd)))))
 
-(defn debug-edge [{:keys [heat-loss] :as edge}]
-  (format "%s<--%s-->%s" (id (parent edge)) heat-loss (id (child edge))))
-
 (defn exclude-edge? [visited]
   (fn [edge]
     (contains? visited (id (child edge)))))
@@ -58,36 +55,22 @@
           new-distances)]))
    [#{} (shortest-distance path-cmp visited distances) distances] edges))
 
-(defn debug-active [active]
-  (keys active))
-
-(defn debug-distances [distances]
-  (reduce-kv
-   (fn [a k {:keys [edges]}]
-     (assoc a k (mapv debug-edge edges)))
-   {} distances))
-
-(defn shortest-paths
+(defn dijkstra
   "Performs Dijkstra's shortest path.
-
   - `graph` is a zipper that uses `Node` objects.
   - `edge-fn` is a function that takes two nodes and returns a sequence of `Edge` objects.
               If there are no edges, return an empty seq or `nil`.
-  - `path-cmp` is a comparator function for sequences of `Edge` objects.
-  - `search` is a value that matches `(id node)` for the target node."
-  [graph edge-fn path-cmp search]
-  (loop [c 0 visited #{(identify graph)}
+  - `path-cmp` is a comparator function for sequences of `Edge` objects."
+  [graph edge-fn path-cmp]
+  (loop [visited #{(identify graph)}
          active {(identify graph) graph}
          distances {(identify graph) {:zipper graph :edges []}}]
-    ;; (println c visited (debug-active active) (debug-distances distances))
-    (if (or (> c 200) (contains? active search))
-      (get distances search)
-      (if-let [edges (seq (remove (exclude-edge? visited) (mapcat (partial edges edge-fn) (vals active))))]
-        (let [[parents [shortest-child] new-distances] (analyze-edges path-cmp visited active distances edges)
-              new-zipper (get-in new-distances [shortest-child :zipper])]
-          (recur (inc c) (conj visited shortest-child)
-                 (-> active
-                     (select-keys parents)
-                     (assoc shortest-child new-zipper))
-                 new-distances))
-        (get distances search)))))
+    (if-let [edges (seq (remove (exclude-edge? visited) (mapcat (partial edges edge-fn) (vals active))))]
+      (let [[parents [shortest-child] new-distances] (analyze-edges path-cmp visited active distances edges)
+            new-zipper (get-in new-distances [shortest-child :zipper])]
+        (recur (conj visited shortest-child)
+               (-> active
+                   (select-keys parents)
+                   (assoc shortest-child new-zipper))
+               new-distances))
+      distances)))
