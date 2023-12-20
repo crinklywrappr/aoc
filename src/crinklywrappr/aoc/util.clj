@@ -1,6 +1,5 @@
 (ns crinklywrappr.aoc.util
-  (:require [clojure.string :as sg]
-            [clojure.core.reducers :as r])
+  (:require [clojure.string :as sg])
   (:import [java.io BufferedReader]))
 
 (defn char-seq
