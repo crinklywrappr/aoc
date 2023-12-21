@@ -31,21 +31,21 @@
 
 (defn analyze-paths [edge-fn path-cmp visited active distances]
   (reduce-kv
-   (fn [[new-visited new-active new-distances :as acc] parent-id parent]
+   (fn [[new-active new-distances :as acc] parent-id parent]
      (loop [active? false new-distances' new-distances
             [edge & edges] (edges edge-fn parent)]
        (if (nil? edge)
          (if active?
-           [new-visited (assoc new-active parent-id parent) new-distances']
-           [new-visited new-active new-distances'])
+           [(assoc new-active parent-id parent) new-distances']
+           [new-active new-distances'])
          (let [child (child edge) child-id (id child)]
            (if (contains? visited child-id)
              (recur active? new-distances' edges)
-             (let [new-path (conj (:edges (get new-visited parent-id)) edge)]
+             (let [new-path (conj (:edges (get visited parent-id)) edge)]
                (if (contains? new-distances' child-id)
                  (recur true (update new-distances' child-id min-path new-path path-cmp parent child) edges)
                  (recur true (assoc new-distances' child-id {:zipper (find-child parent child) :edges new-path}) edges))))))))
-   [visited {} distances] active))
+   [{} distances] active))
 
 (defn dijkstra
   "Performs Dijkstra's shortest path.
@@ -57,10 +57,10 @@
   (loop [visited {(identify graph) {:zipper graph :edges []}}
          active {(identify graph) graph}
          distances (pm/priority-map-keyfn-by :edges path-cmp)]
-    (let [[visited' active' distances'] (analyze-paths edge-fn path-cmp visited active distances)]
+    (let [[active' distances'] (analyze-paths edge-fn path-cmp visited active distances)]
       (if (and (seq active') (seq distances'))
         (let [[next-node next-path] (peek distances')]
-          (recur (assoc visited' next-node next-path)
+          (recur (assoc visited next-node next-path)
                  (assoc active' next-node (:zipper next-path))
                  (dissoc distances' next-node)))
         (merge visited distances)))))
