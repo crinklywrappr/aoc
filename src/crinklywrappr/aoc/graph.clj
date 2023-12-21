@@ -37,7 +37,7 @@
        (if (nil? edge)
          (if active?
            [new-visited (assoc new-active parent-id parent) new-distances']
-           [(assoc new-visited parent-id (get new-visited parent-id)) new-active new-distances'])
+           [new-visited new-active new-distances'])
          (let [child (child edge) child-id (id child)]
            (if (contains? visited child-id)
              (recur active? new-distances' edges)
