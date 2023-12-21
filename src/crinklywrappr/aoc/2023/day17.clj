@@ -6,11 +6,11 @@
 (def file (io/resource "2023/day17ex.txt"))
 
 (defrecord Node [row col block dir]
-  g/Node
+  g/INode
   (id [_] {:row row :col col :block block :dir dir}))
 
 (defrecord Edge [from to heat-loss]
-  g/Edge
+  g/IEdge
   (parent [_] from)
   (child [_] to))
 
@@ -48,23 +48,19 @@
                 (mapv vec (line-seq rdr)))
         max-row (count lines)
         max-col (count (first lines))
-        distances (->>
-                   (g/dijkstra
-                    (zip/zipper
-                     (constantly true)
-                     (partial children max-row max-col)
-                     (constantly nil)
-                     (map->Node {:row 0 :col 0 :block 4}))
-                    (fn edges [parent {:keys [row col] :as child}]
-                      [(->Edge parent child (- (byte (get-in lines [row col])) 48))])
-                    (fn [a b]
-                      (letfn [(agg [n {:keys [heat-loss]}]
-                                (+ n heat-loss))]
-                        (let [x (reduce agg 0 a) y (reduce agg 0 b)]
-                          (cond
-                            (== x y) 0
-                            (< x y) -1
-                            :else 1))))))]
+        mygraph (g/graph (partial children max-row max-col)
+                         (fn edges [parent {:keys [row col] :as child}]
+                           [(->Edge parent child (- (byte (get-in lines [row col])) 48))])
+                         (fn path-comparator [a b]
+                           (letfn [(agg [n {:keys [heat-loss]}]
+                                     (+ n heat-loss))]
+                             (let [x (reduce agg 0 a) y (reduce agg 0 b)]
+                               (cond
+                                 (== x y) 0
+                                 (< x y) -1
+                                 :else 1))))
+                         (map->Node {:row 0 :col 0 :block 4}))
+        distances (g/dijkstra mygraph)]
     (assert (== (count distances) 1717))
     (println (->> distances
                   (filter (fn [[{:keys [row col]} _]] (and (== row 12) (== col 12))))

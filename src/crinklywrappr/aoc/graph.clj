@@ -4,17 +4,32 @@
 
 ;; intentionally anemic protocols
 
-(defprotocol Node
+(defprotocol INode
   (id [_] "A unique id or name for this node"))
 
-(defprotocol Edge
+(defprotocol IEdge
   "Does not express directionality"
   (parent [_] "The node that was passed to `edges`")
   (child [_] "A \"child\" node."))
 
-(defn edges [edge-fn graph]
-  (mapcat (partial edge-fn (zip/node graph))
-          (zip/children graph)))
+(defn graph
+  "Creates a zipper with the following additional metadata
+  - `children` is a function that takes an `INode` value and returns a sequence of adjacent `INode` objects
+               If there are no adjacent nodes, return an empty seq or `nil`.
+  - `edges` is a function that takes two nodes and returns a sequence of `IEdge` objects.
+            If there are no edges, return an empty seq or `nil`.
+  - `path-comparator` is a comparator function for sequences of `IEdge` objects.
+  - `root` is a value that satisfies the `INode` protocol"
+  [children edges path-comparator root]
+  (vary-meta
+   (zip/zipper (constantly true) children (constantly nil) root)
+   assoc :graph/edges edges :graph/path-comparator path-comparator))
+
+(defn edges [graph]
+  (mapcat
+   (partial (:graph/edges (meta graph))
+      (zip/node graph))
+   (zip/children graph)))
 
 (defn identify [graph]
   (id (zip/node graph)))
@@ -29,11 +44,11 @@
     {:zipper (find-child parent child) :edges new-path}
     old))
 
-(defn analyze-paths [edge-fn path-cmp visited active distances]
+(defn analyze-paths [path-cmp visited active distances]
   (reduce-kv
    (fn [[new-active new-distances :as acc] parent-id parent]
      (loop [active? false new-distances' new-distances
-            [edge & edges] (edges edge-fn parent)]
+            [edge & edges] (edges parent)]
        (if (nil? edge)
          (if active?
            [(assoc new-active parent-id parent) new-distances']
@@ -48,19 +63,16 @@
    [{} distances] active))
 
 (defn dijkstra
-  "Performs Dijkstra's shortest path.
-  - `graph` is a zipper that uses `Node` objects.
-  - `edge-fn` is a function that takes two nodes and returns a sequence of `Edge` objects.
-              If there are no edges, return an empty seq or `nil`.
-  - `path-cmp` is a comparator function for sequences of `Edge` objects."
-  [graph edge-fn path-cmp]
-  (loop [visited {(identify graph) {:zipper graph :edges []}}
-         active {(identify graph) graph}
-         distances (pm/priority-map-keyfn-by :edges path-cmp)]
-    (let [[active' distances'] (analyze-paths edge-fn path-cmp visited active distances)]
-      (if (and (seq active') (seq distances'))
-        (let [[next-node next-path] (peek distances')]
-          (recur (assoc visited next-node next-path)
-                 (assoc active' next-node (:zipper next-path))
-                 (dissoc distances' next-node)))
-        (merge visited distances)))))
+  "Performs Dijkstra's shortest path."
+  [graph]
+  (let [path-cmp (:graph/path-comparator (meta graph))]
+    (loop [visited {(identify graph) {:zipper graph :edges []}}
+           active {(identify graph) graph}
+           distances (pm/priority-map-keyfn-by :edges path-cmp)]
+      (let [[active' distances'] (analyze-paths path-cmp visited active distances)]
+        (if (and (seq active') (seq distances'))
+          (let [[next-node next-path] (peek distances')]
+            (recur (assoc visited next-node next-path)
+                   (assoc active' next-node (:zipper next-path))
+                   (dissoc distances' next-node)))
+          (merge visited distances))))))
