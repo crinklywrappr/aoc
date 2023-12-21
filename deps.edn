@@ -1,6 +1,7 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
-        org.clj-commons/digest {:mvn/version "1.4.100"}}
+        org.clj-commons/digest {:mvn/version "1.4.100"}
+        org.clojure/data.priority-map {:mvn/version "1.1.0"}}
  :aliases
  {:test
   {:extra-paths ["test"]

@@ -1,5 +1,6 @@
 (ns crinklywrappr.aoc.graph
-  (:require [clojure.zip :as zip]))
+  (:require [clojure.zip :as zip]
+            [clojure.data.priority-map :as pm]))
 
 ;; intentionally anemic protocols
 
@@ -23,37 +24,28 @@
     (if (= (zip/node nd) search)
       nd (recur (zip/right nd)))))
 
-(defn exclude-edge? [visited]
-  (fn [edge]
-    (contains? visited (id (child edge)))))
+(defn min-path [{old-path :edges :as old} new-path path-cmp parent child]
+  (if (neg? (path-cmp new-path old-path))
+    {:zipper (find-child parent child) :edges new-path}
+    old))
 
-(defn exclude-path? [visited]
-  (fn [[k _]]
-    (contains? visited k)))
-
-(defn shortest-distance [path-cmp visited distances]
-  (->> distances
-       (remove (exclude-path? visited))
-       (sort-by (comp :edges val) path-cmp)
-       first))
-
-(defn analyze-edges [path-cmp visited active distances edges]
-  (reduce
-   (fn [[parents [shortest-child {shortest-path :edges} :as shortest] new-distances] edge]
-     (let [parent (id (parent edge))
-           child (child edge)
-           child-id (id child)
-           old-child-path (:edges (get new-distances child-id))
-           new-child-path (conj (:edges (get distances parent)) edge)]
-       [(conj parents parent)
-        (if (or (nil? shortest) (neg? (path-cmp new-child-path shortest-path)))
-          [child-id new-child-path] shortest)
-        (if (or (not (contains? new-distances child-id))
-                (neg? (path-cmp new-child-path old-child-path)))
-          (assoc new-distances child-id {:zipper (find-child (get active parent) child)
-                                         :edges new-child-path})
-          new-distances)]))
-   [#{} (shortest-distance path-cmp visited distances) distances] edges))
+(defn analyze-paths [edge-fn path-cmp visited active distances]
+  (reduce-kv
+   (fn [[new-visited new-active new-distances :as acc] parent-id parent]
+     (loop [active? false new-distances' new-distances
+            [edge & edges] (edges edge-fn parent)]
+       (if (nil? edge)
+         (if active?
+           [new-visited (assoc new-active parent-id parent) new-distances']
+           [(assoc new-visited parent-id (get new-visited parent-id)) new-active new-distances'])
+         (let [child (child edge) child-id (id child)]
+           (if (contains? visited child-id)
+             (recur active? new-distances' edges)
+             (let [new-path (conj (:edges (get new-visited parent-id)) edge)]
+               (if (contains? new-distances' child-id)
+                 (recur true (update new-distances' child-id min-path new-path path-cmp parent child) edges)
+                 (recur true (assoc new-distances' child-id {:zipper (find-child parent child) :edges new-path}) edges))))))))
+   [visited {} distances] active))
 
 (defn dijkstra
   "Performs Dijkstra's shortest path.
@@ -62,15 +54,13 @@
               If there are no edges, return an empty seq or `nil`.
   - `path-cmp` is a comparator function for sequences of `Edge` objects."
   [graph edge-fn path-cmp]
-  (loop [visited #{(identify graph)}
+  (loop [visited {(identify graph) {:zipper graph :edges []}}
          active {(identify graph) graph}
-         distances {(identify graph) {:zipper graph :edges []}}]
-    (if-let [edges (seq (remove (exclude-edge? visited) (mapcat (partial edges edge-fn) (vals active))))]
-      (let [[parents [shortest-child] new-distances] (analyze-edges path-cmp visited active distances edges)
-            new-zipper (get-in new-distances [shortest-child :zipper])]
-        (recur (conj visited shortest-child)
-               (-> active
-                   (select-keys parents)
-                   (assoc shortest-child new-zipper))
-               new-distances))
-      distances)))
+         distances (pm/priority-map-keyfn-by :edges path-cmp)]
+    (let [[visited' active' distances'] (analyze-paths edge-fn path-cmp visited active distances)]
+      (if (and (seq active') (seq distances'))
+        (let [[next-node next-path] (peek distances')]
+          (recur (assoc visited' next-node next-path)
+                 (assoc active' next-node (:zipper next-path))
+                 (dissoc distances' next-node)))
+        (merge visited distances)))))
