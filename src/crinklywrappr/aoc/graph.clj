@@ -66,13 +66,13 @@
   "Performs Dijkstra's shortest path."
   [graph]
   (let [path-cmp (:graph/path-comparator (meta graph))]
-    (loop [visited {(identify graph) {:zipper graph :edges []}}
+    (loop [visited (transient {(identify graph) {:zipper graph :edges []}})
            active {(identify graph) graph}
            distances (pm/priority-map-keyfn-by :edges path-cmp)]
       (let [[active' distances'] (analyze-paths path-cmp visited active distances)]
         (if (and (seq active') (seq distances'))
           (let [[next-node next-path] (peek distances')]
-            (recur (assoc visited next-node next-path)
+            (recur (assoc! visited next-node next-path)
                    (assoc active' next-node (:zipper next-path))
                    (dissoc distances' next-node)))
-          (merge visited distances))))))
+          (merge (persistent! visited) distances))))))
