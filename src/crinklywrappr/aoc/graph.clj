@@ -35,10 +35,12 @@
    assoc :graph/edges edges :graph/make-path make-path :graph/path-comparator path-comparator))
 
 (defn edges [graph]
-  (mapcat
-   (partial (:graph/edges (meta graph))
-      (zip/node graph))
-   (zip/children graph)))
+  (let [f (:graph/edges (meta graph))
+        p (zip/node graph)]
+    (reduce
+     (fn [a b]
+       (concat a (f p b)))
+     [] (zip/children graph))))
 
 (defn compare-paths [path1 path2]
   ((:graph/path-comparator (meta (graph-at-node path1))) path1 path2))

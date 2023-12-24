@@ -23,8 +23,8 @@
 (defn children [max-row max-col {:keys [row col dir block]}]
   (filterv
    (fn valid? [{:keys [col row block]}]
-     (and (< -1 row max-row)
-          (< -1 col max-col)
+     (and (< -1 row) (< row max-row)
+          (< -1 col) (< col max-col)
           (pos? block)))
    (case dir
      :east [(->Node (dec row) col 3 :north)
