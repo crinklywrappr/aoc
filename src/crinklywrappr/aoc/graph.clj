@@ -87,13 +87,13 @@
 (defn dijkstra
   "Performs Dijkstra's shortest path."
   [graph]
-  (loop [visited (transient {(identify graph) (make-path graph)})
+  (loop [visited {(identify graph) (make-path graph)}
          active {(identify graph) graph}
          distances (pm/priority-map-keyfn-by identity compare-paths)]
     (let [[active' distances'] (analyze-paths visited active distances)]
       (if (and (seq active') (seq distances'))
         (let [[next-node next-path] (peek distances')]
-          (recur (assoc! visited next-node next-path)
+          (recur (assoc visited next-node next-path)
                  (assoc active' next-node (graph-at-node next-path))
                  (pop distances')))
-        (merge (persistent! visited) distances)))))
+        (merge visited distances)))))

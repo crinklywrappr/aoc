@@ -27,20 +27,20 @@
           (< -1 col max-col)
           (pos? block)))
    (case dir
-     :east [(map->Node {:row (dec row) :col col :block 3 :dir :north})
-            (map->Node {:row (inc row) :col col :block 3 :dir :south})
-            (map->Node {:row row :col (inc col) :block (dec block) :dir :east})]
-     :south [(map->Node {:row row :col (inc col) :block 3 :dir :east})
-             (map->Node {:row row :col (dec col) :block 3 :dir :west})
-             (map->Node {:row (inc row) :col col :block (dec block) :dir :south})]
-     :west [(map->Node {:row (inc row) :col col :block 3 :dir :south})
-            (map->Node {:row (dec row) :col col :block 3 :dir :north})
-            (map->Node {:row row :col (dec col) :block (dec block) :dir :west})]
-     :north [(map->Node {:row row :col (dec col) :block 3 :dir :west})
-             (map->Node {:row row :col (inc col) :block 3 :dir :east})
-             (map->Node {:row (dec row) :col col :block (dec block) :dir :north})]
-     nil [(map->Node {:row 0 :col 1 :block 3 :dir :east})
-          (map->Node {:row 1 :col 0 :block 3 :dir :south})])))
+     :east [(->Node (dec row) col 3 :north)
+            (->Node (inc row) col 3 :south)
+            (->Node row (inc col) (dec block) :east)]
+     :south [(->Node row (inc col) 3 :east)
+             (->Node row (dec col) 3 :west)
+             (->Node (inc row) col (dec block) :south)]
+     :west [(->Node (inc row) col 3 :south)
+            (->Node (dec row) col 3 :north)
+            (->Node row (dec col) (dec block) :west)]
+     :north [(->Node row (dec col) 3 :west)
+             (->Node row (inc col) 3 :east)
+             (->Node (dec row) col (dec block) :north)]
+     nil [(->Node 0 1 3 :east)
+          (->Node 1 0 3 :south)])))
 
 (defn visualize [lines {:keys [edges]}]
   (reduce
@@ -57,7 +57,7 @@
      (g/graph
       (partial children max-row max-col)
       (fn edges [parent {:keys [row col] :as child}]
-        [(->Edge parent child (- (byte (get-in lines [row col])) 48))])
+        [(->Edge parent child (- (byte (-> lines (get row) (get col))) 48))])
       (fn make-path
         ([graph] (->Path graph 0))
         ([{:keys [total-heat-loss]} graph {:keys [heat-loss]}]
