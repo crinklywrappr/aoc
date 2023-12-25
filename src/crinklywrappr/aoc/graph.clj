@@ -68,7 +68,7 @@
 
 (defn analyze-edges [distances parent-graph parent-path child-id child-node]
   (reduce
-   (fn analyze-paths' [distances' edge]
+   (fn analyze-edges' [distances' edge]
      (update distances' child-id min-path parent-path edge))
    distances (edges parent-graph child-node)))
 
@@ -88,10 +88,9 @@
          active-graph graph active-path (make-path graph)
          distances (pm/priority-map-keyfn-by identity compare-paths)]
     (let [distances' (analyze-children visited active-graph active-path distances)]
-      (let [[next-id next-path] (peek distances')
-            distances' (pop distances')]
-        (if (seq distances')
+      (if (seq distances')
+        (let [[next-id next-path] (peek distances')]
           (recur (assoc visited next-id next-path)
                  (graph-at-node next-path) next-path
-                 distances')
-          (assoc visited next-id next-path))))))
+                 (pop distances')))
+        visited))))
