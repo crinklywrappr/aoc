@@ -74,19 +74,19 @@
           (pos? block)))
    (case dir
      :east [(->Node row (inc col) (dec block) :east)
-            (->Node (+ 4 row) col 5 :north)
-            (->Node (+ 4 row) col 5 :south)]
+            (->Node (+ 4 row) col 6 :north)
+            (->Node (+ 4 row) col 6 :south)]
      :south [(->Node (inc row) col (dec block) :south)
-             (->Node row (+ 4 col) 5 :east)
-             (->Node row (+ 4 col) 5 :west)]
+             (->Node row (+ 4 col) 6 :east)
+             (->Node row (+ 4 col) 6 :west)]
      :west [(->Node row (inc col) (dec block) :west)
-            (->Node (+ 4 row) col 5 :south)
-            (->Node (+ 4 row) col 5 :north)]
+            (->Node (+ 4 row) col 6 :south)
+            (->Node (+ 4 row) col 6 :north)]
      :north [(->Node (inc row) col (dec block) :north)
-             (->Node row (+ 4 col) 5 :west)
-             (->Node row (+ 4 col) 5 :east)]
-     [(->Node 0 5 5 :east)
-      (->Node 5 0 5 :south)])))
+             (->Node row (+ 4 col) 6 :west)
+             (->Node row (+ 4 col) 6 :east)]
+     [(->Node 0 5 6 :east)
+      (->Node 5 0 6 :south)])))
 
 (defn visualize [{:keys [edges]}]
   (reduce
@@ -128,3 +128,4 @@
    (apply min-key (comp :total-heat-loss val)) val :total-heat-loss))
 
 ;; 1460 <= too high
+;; 1443 <= too high
