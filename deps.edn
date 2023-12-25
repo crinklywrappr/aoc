@@ -11,4 +11,7 @@
   :build {:deps {io.github.clojure/tools.build
                  {:git/tag "v0.9.2" :git/sha "fe6b140"}
                  slipset/deps-deploy {:mvn/version "0.2.0"}}
-          :ns-default build}}}
+          :ns-default build}
+  :profiling
+  {:extra-deps {com.clojure-goes-fast/clj-async-profiler {:mvn/version "1.1.1"}}
+   :jvm-opts ["-server" "-Djdk.attach.allowAttachSelf"]}}}
