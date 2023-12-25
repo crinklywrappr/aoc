@@ -34,13 +34,10 @@
    (zip/zipper (constantly true) children (constantly nil) root)
    assoc :graph/edges edges :graph/make-path make-path :graph/path-comparator path-comparator))
 
-(defn edges [graph]
-  (let [f (:graph/edges (meta graph))
-        p (zip/node graph)]
-    (reduce
-     (fn [a b]
-       (concat a (f p b)))
-     [] (zip/children graph))))
+(defn edges
+  "child is a node, not an id"
+  [graph child]
+  ((:graph/edges (meta graph)) (zip/node graph) child))
 
 (defn compare-paths [path1 path2]
   ((:graph/path-comparator (meta (graph-at-node path1))) path1 path2))
@@ -62,40 +59,39 @@
   ([parent-path graph edge]
    ((:graph/make-path (meta graph)) parent-path graph edge)))
 
-(defn min-path [old-path new-path]
-  (if (neg? (compare-paths new-path old-path))
-    new-path old-path))
+(defn min-path [old-path parent-path edge]
+  (if (nil? old-path)
+    (make-path parent-path edge)
+    (let [new-path (make-path parent-path (graph-at-node old-path) edge)]
+      (if (neg? (compare-paths new-path old-path))
+        new-path old-path))))
 
-(defn analyze-paths [visited active distances]
-  (reduce-kv
-   (fn analyze-paths' [[new-active new-distances :as acc] parent-id parent]
-     (loop [active? false new-distances' new-distances
-            [edge & edges] (edges parent)]
-       (if (nil? edge)
-         (if active?
-           [(assoc new-active parent-id parent) new-distances']
-           [new-active new-distances'])
-         (let [child-id (id (child edge))]
-           (if (contains? visited child-id)
-             (recur active? new-distances' edges)
-             (let [parent-path (get visited parent-id)]
-               (if-let [old-path (get new-distances' child-id)]
-                 (let [new-path (make-path parent-path (graph-at-node old-path) edge)]
-                   (recur true (update new-distances' child-id min-path new-path) edges))
-                 (let [new-path (make-path parent-path edge)]
-                   (recur true (assoc new-distances' child-id new-path) edges)))))))))
-   [{} distances] active))
+(defn analyze-edges [distances parent-graph parent-path child-id child-node]
+  (reduce
+   (fn analyze-paths' [distances' edge]
+     (update distances' child-id min-path parent-path edge))
+   distances (edges parent-graph child-node)))
+
+(defn analyze-children [visited parent-graph parent-path distances]
+  (reduce
+   (fn analyze-children' [distances' child-node]
+     (let [child-id (id child-node)]
+       (if (contains? visited child-id)
+         distances'
+         (analyze-edges distances' parent-graph parent-path child-id child-node))))
+   distances (zip/children parent-graph)))
 
 (defn dijkstra
   "Performs Dijkstra's shortest path."
   [graph]
   (loop [visited {(identify graph) (make-path graph)}
-         active {(identify graph) graph}
+         active-graph graph active-path (make-path graph)
          distances (pm/priority-map-keyfn-by identity compare-paths)]
-    (let [[active' distances'] (analyze-paths visited active distances)]
-      (if (and (seq active') (seq distances'))
-        (let [[next-node next-path] (peek distances')]
-          (recur (assoc visited next-node next-path)
-                 (assoc active' next-node (graph-at-node next-path))
-                 (pop distances')))
-        (merge visited distances)))))
+    (let [distances' (analyze-children visited active-graph active-path distances)]
+      (let [[next-id next-path] (peek distances')
+            distances' (pop distances')]
+        (if (seq distances')
+          (recur (assoc visited next-id next-path)
+                 (graph-at-node next-path) next-path
+                 distances')
+          (assoc visited next-id next-path))))))

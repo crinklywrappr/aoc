@@ -9,7 +9,7 @@
 
 (defrecord Node [row col block dir]
   g/INode
-  (id [_] {:row row :col col :block block :dir dir}))
+  (id [_] [row col block dir]))
 
 (defrecord Edge [from to heat-loss]
   g/IEdge
@@ -69,6 +69,5 @@
           :else 1))
       (map->Node {:row 0 :col 0 :block 4}))
      g/dijkstra
-     (filter (fn [[{:keys [row col]} _]] (and (== row (dec max-row)) (== col (dec max-col)))))
-     (apply min-key (comp :total-heat-loss val))
-     val :total-heat-loss)))
+     (filter (fn [[[row col] _]] (and (== row (dec max-row)) (== col (dec max-col)))))
+     (apply min-key (comp :total-heat-loss val)) val :total-heat-loss)))
