@@ -20,7 +20,7 @@
   (parent [_] from)
   (child [_] to))
 
-(defrecord Path [graph edges total-heat-loss]
+(defrecord Path [graph total-heat-loss]
   g/IPath
   (graph-at-node [_] graph))
 
@@ -95,29 +95,36 @@
                 (assoc-in lines [0 0] \#) edges)]
     (println (apply str line))))
 
-(defn row-weight [col orig-row row]
+(defn row-weight [col from to]
   (reduce
    (fn [a b] (+ a (- (byte (get b col)) 48)))
-   0 (subvec lines (inc (min orig-row row)) (inc (max orig-row row)))))
+   0 (subvec lines from to)))
 
-(defn col-weight [row orig-col col]
+(defn col-weight [row from to]
   (reduce
    (fn [a b] (+ a (- (byte b) 48)))
-   0 (subvec (lines row) (inc (min orig-col col)) (inc (max orig-col col)))))
+   0 (subvec (lines row) from to)))
+
+(defn p2edges
+  [{orig-row :row orig-col :col :as parent} {:keys [row col dir] :as child}]
+  [(->Edge parent child
+           (let [diff (+ (- row orig-row) (- col orig-col))]
+             (if (or (== diff -1) (== diff 1))
+               (- (byte (-> lines (get row) (get col))) 48)
+               (case dir
+                 :east (col-weight row (inc orig-col) (inc col))
+                 :south (row-weight col (inc orig-row) (inc row))
+                 :west (col-weight row col orig-col)
+                 :north (row-weight col row orig-row)))))])
 
 (defn part2 []
   (->>
    (g/graph
-    p2children
-    (fn edges [{orig-row :row orig-col :col :as parent} {:keys [row col] :as child}]
-      (cond
-        (> (abs (- row orig-row)) 1) [(->Edge parent child (row-weight col orig-row row))]
-        (> (abs (- col orig-col)) 1) [(->Edge parent child (col-weight row orig-col col))]
-        :else [(->Edge parent child (- (byte (-> lines (get row) (get col))) 48))]))
+    p2children p2edges
     (fn make-path
-      ([graph] (->Path graph [] 0))
-      ([{:keys [total-heat-loss edges]} graph {:keys [heat-loss] :as edge}]
-       (->Path graph (conj edges edge) (+ total-heat-loss heat-loss))))
+      ([graph] (->Path graph 0))
+      ([{:keys [total-heat-loss]} graph {:keys [heat-loss]}]
+       (->Path graph (+ total-heat-loss heat-loss))))
     (fn path-comparator [{a :total-heat-loss} {b :total-heat-loss}]
       (cond
         (== a b) 0
@@ -126,12 +133,4 @@
     (map->Node {:row 0 :col 0}))
    g/dijkstra
    (filter (fn [[[row col] _]] (and (== row (dec max-row)) (== col (dec max-col)))))
-   (apply min-key (comp :total-heat-loss val)) val :total-heat-loss
-   ))
-
-;; 1460 <= too high
-;; 1443 <= too high
-;; 1420 <= too high
-;; 1404 <= incorrect
-;; 1388 <= incorrect
-;; 1355 <= incorrect
+   (apply min-key (comp :total-heat-loss val)) val :total-heat-loss))
