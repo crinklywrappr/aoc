@@ -20,7 +20,7 @@
   (parent [_] from)
   (child [_] to))
 
-(defrecord Path [graph total-heat-loss]
+(defrecord Path [graph edges total-heat-loss]
   g/IPath
   (graph-at-node [_] graph))
 
@@ -74,25 +74,26 @@
           (pos? block)))
    (case dir
      :east [(->Node row (inc col) (dec block) :east)
-            (->Node (+ 4 row) col 6 :north)
-            (->Node (+ 4 row) col 6 :south)]
+            (->Node (- row 4) col 7 :north)
+            (->Node (+ row 4) col 7 :south)]
      :south [(->Node (inc row) col (dec block) :south)
-             (->Node row (+ 4 col) 6 :east)
-             (->Node row (+ 4 col) 6 :west)]
-     :west [(->Node row (inc col) (dec block) :west)
-            (->Node (+ 4 row) col 6 :south)
-            (->Node (+ 4 row) col 6 :north)]
-     :north [(->Node (inc row) col (dec block) :north)
-             (->Node row (+ 4 col) 6 :west)
-             (->Node row (+ 4 col) 6 :east)]
-     [(->Node 0 5 6 :east)
-      (->Node 5 0 6 :south)])))
+             (->Node row (+ col 4) 7 :east)
+             (->Node row (- col 4) 7 :west)]
+     :west [(->Node row (dec col) (dec block) :west)
+            (->Node (+ row 4) col 7 :south)
+            (->Node (- row 4) col 7 :north)]
+     :north [(->Node (dec row) col (dec block) :north)
+             (->Node row (- col 4) 7 :west)
+             (->Node row (+ col 4) 7 :east)]
+     [(->Node 0 4 7 :east)
+      (->Node 4 0 7 :south)])))
 
 (defn visualize [{:keys [edges]}]
-  (reduce
-   (fn [a {{:keys [row col]} :to}]
-     (assoc-in a [row col] \#))
-   (assoc-in lines [0 0] \#) edges))
+  (doseq [line (reduce
+                (fn [a {{:keys [row col]} :to}]
+                  (assoc-in a [row col] \#))
+                (assoc-in lines [0 0] \#) edges)]
+    (println (apply str line))))
 
 (defn row-weight [col orig-row row]
   (reduce
@@ -114,9 +115,9 @@
         (> (abs (- col orig-col)) 1) [(->Edge parent child (col-weight row orig-col col))]
         :else [(->Edge parent child (- (byte (-> lines (get row) (get col))) 48))]))
     (fn make-path
-      ([graph] (->Path graph 0))
-      ([{:keys [total-heat-loss]} graph {:keys [heat-loss]}]
-       (->Path graph (+ total-heat-loss heat-loss))))
+      ([graph] (->Path graph [] 0))
+      ([{:keys [total-heat-loss edges]} graph {:keys [heat-loss] :as edge}]
+       (->Path graph (conj edges edge) (+ total-heat-loss heat-loss))))
     (fn path-comparator [{a :total-heat-loss} {b :total-heat-loss}]
       (cond
         (== a b) 0
@@ -125,7 +126,12 @@
     (map->Node {:row 0 :col 0}))
    g/dijkstra
    (filter (fn [[[row col] _]] (and (== row (dec max-row)) (== col (dec max-col)))))
-   (apply min-key (comp :total-heat-loss val)) val :total-heat-loss))
+   (apply min-key (comp :total-heat-loss val)) val :total-heat-loss
+   ))
 
 ;; 1460 <= too high
 ;; 1443 <= too high
+;; 1420 <= too high
+;; 1404 <= incorrect
+;; 1388 <= incorrect
+;; 1355 <= incorrect
