@@ -17,6 +17,11 @@
      (cons line (lazy-seq (wrap-line-seq rdr after)))
      [after])))
 
+(defn chunk-seq [n xform lines]
+  (when (== n (count (take n lines)))
+    (concat (apply xform (take n lines))
+            (lazy-seq (chunk-seq n xform (drop n lines))))))
+
 ;; Stolen from Vincent Ho, who stole it from SO
 (defn re-pos [re s]
   (if (nil? re)
