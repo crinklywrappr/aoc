@@ -18,7 +18,7 @@
     (with-open [rdr (io/reader file)]
       (transduce (map parse) f 0 (line-seq rdr)))))
 
-(defn parse-triplets [l1 l2 l3]
+(defn parse-triplets [[l1 l2 l3]]
   (let [[a b c] (parse l1)
         [d e f] (parse l2)
         [g h i] (parse l3)]
@@ -27,4 +27,4 @@
 (defn part2 []
   (letfn [(f [a b] (if (valid-triangle? b) (inc a) a))]
     (with-open [rdr (io/reader file)]
-      (reduce f 0 (util/chunk-seq 3 parse-triplets (line-seq rdr))))))
+      (reduce f 0 (util/chunky-line-seq 3 parse-triplets rdr)))))

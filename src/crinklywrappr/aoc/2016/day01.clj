@@ -1,13 +1,13 @@
 (ns crinklywrappr.aoc.2016.day01
   (:require [clojure.java.io :as io]
-            [crinklywrappr.aoc.geom :as geom]))
+            [crinklywrappr.aoc.util :as util]
+            [crinklywrappr.aoc.geom :as geom])
+  (:import [java.io BufferedReader]))
+
+(def file (io/resource "2016/day01.txt"))
 
 (defn parse [instr]
-  [(first instr) (parse-long (subs instr 1))])
-
-(def input (->> (io/resource "2016/day01.txt")
-                (slurp) (re-seq #"[RL]\d+")
-                (mapv parse)))
+  [[(first instr) (parse-long (subs instr 1))]])
 
 (defn visit [[[x y] facing] [dir steps]]
   (case [facing dir]
@@ -20,10 +20,19 @@
     [:west \R] [[x (- y steps)] :north]
     [:west \L] [[x (+ y steps)] :south]))
 
+(defn read-directions [^BufferedReader rdr]
+  (let [comma-or-end? (fn [c] (or (= c \,) (= c \newline)))
+        next-fn (fn [xs] (apply str (take-while (complement comma-or-end?) xs)))
+        advance? (fn [chunk _] (seq chunk))
+        rest-fn (fn [chunk xs] (drop (+ (count chunk) 2) xs))
+        f (util/chunk-seq next-fn advance? rest-fn parse)]
+    (f (util/char-seq rdr))))
+
 (defn part1 []
-  (->> input
-       (reduce visit [[0 0] :north])
-       first (mapv abs) (apply +)))
+  (with-open [rdr (io/reader file)]
+    (->> (read-directions rdr)
+         (reduce visit [[0 0] :north])
+         first (mapv abs) (apply +))))
 
 (defn visited? [old-coords new-coords prior-path]
   (when (geom/intersects? (vec prior-path) [old-coords new-coords])
@@ -36,4 +45,5 @@
       (vec (cons (conj visited coords) new-state)))))
 
 (defn part2 []
-  (reduce track [[[0 0]] [0 0] :north] input))
+  (with-open [rdr (io/reader file)]
+    (reduce track [[[0 0]] [0 0] :north] (read-directions rdr))))
