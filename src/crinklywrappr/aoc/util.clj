@@ -34,13 +34,6 @@
       (when (advance? chunk xs)
         (concat (xform chunk) (lazy-seq (chunk-seq' (rest-fn chunk xs))))))))
 
-(defn chunky-line-seq [n xform ^BufferedReader rdr]
-  (let [next-fn (fn [xs] (take n xs))
-        advance? (fn [chunk _] (== (count chunk) 3))
-        rest-fn (fn [_ xs] (drop n xs))
-        f (chunk-seq next-fn advance? rest-fn xform)]
-    (f (line-seq rdr))))
-
 ;; Stolen from Vincent Ho, who stole it from SO
 (defn re-pos [re s]
   (if (nil? re)

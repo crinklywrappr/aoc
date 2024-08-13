@@ -12,19 +12,26 @@
        (> (+ a c) b)
        (> (+ b c) a)))
 
-(defn part1 []
-  (letfn [(f ([a] a)
-            ([a b] (if (valid-triangle? b) (inc a) a)))]
-    (with-open [rdr (io/reader file)]
-      (transduce (map parse) f 0 (line-seq rdr)))))
+(defn acc
+  ([] 0)
+  ([a] a)
+  ([a b] (if (valid-triangle? b) (inc a) a)))
 
-(defn parse-triplets [[l1 l2 l3]]
-  (let [[a b c] (parse l1)
-        [d e f] (parse l2)
-        [g h i] (parse l3)]
+(defn part1 []
+  (with-open [rdr (io/reader file)]
+    (transduce (map parse) acc (line-seq rdr))))
+
+(defn parse-triplets [[t1 t2 t3]]
+  (let [[a b c] t1
+        [d e f] t2
+        [g h i] t3]
     [[a d g] [b e h] [c f i]]))
 
 (defn part2 []
-  (letfn [(f [a b] (if (valid-triangle? b) (inc a) a))]
-    (with-open [rdr (io/reader file)]
-      (reduce f 0 (util/chunky-line-seq 3 parse-triplets rdr)))))
+  (with-open [rdr (io/reader file)]
+    (transduce
+     (comp
+      (map parse)
+      (partition-all 3)
+      (mapcat parse-triplets))
+     acc (line-seq rdr))))
