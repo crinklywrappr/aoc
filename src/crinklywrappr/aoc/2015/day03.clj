@@ -1,8 +1,8 @@
-(ns crinklywrappr.aoc.2015.day3
+(ns crinklywrappr.aoc.2015.day03
   (:require [clojure.java.io :as io]
             [crinklywrappr.aoc.util :as util]))
 
-(def file (io/resource "2015/day3.txt"))
+(def file (io/resource "2015/day03.txt"))
 
 (defn move
   [[x y :as coords] character]

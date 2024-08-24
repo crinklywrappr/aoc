@@ -1,8 +1,8 @@
-(ns crinklywrappr.aoc.2015.day5
+(ns crinklywrappr.aoc.2015.day05
   (:require [clojure.java.io :as io]
             [clojure.string :as sg]))
 
-(def file (io/resource "2015/day5.txt"))
+(def file (io/resource "2015/day05.txt"))
 
 (defn count-nice-lines
   [pred reader]

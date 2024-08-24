@@ -1,7 +1,7 @@
-(ns crinklywrappr.aoc.2015.day2
+(ns crinklywrappr.aoc.2015.day02
   (:require [clojure.java.io :as io]))
 
-(def file (io/resource "2015/day2.txt"))
+(def file (io/resource "2015/day02.txt"))
 
 (defn parse [line]
   (->> (re-seq #"\d+" line)

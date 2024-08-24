@@ -1,4 +1,4 @@
-(ns crinklywrappr.aoc.2015.day4
+(ns crinklywrappr.aoc.2015.day04
   (:require [clj-commons.digest :as digest]
             [clojure.string :as sg]))
 

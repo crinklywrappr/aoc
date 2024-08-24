@@ -1,8 +1,8 @@
-(ns crinklywrappr.aoc.2015.day1
+(ns crinklywrappr.aoc.2015.day01
   (:require [clojure.java.io :as io]
             [crinklywrappr.aoc.util :as util]))
 
-(def file (io/resource "2015/day1.txt"))
+(def file (io/resource "2015/day01.txt"))
 
 (defn change-floor [floor character]
   (cond

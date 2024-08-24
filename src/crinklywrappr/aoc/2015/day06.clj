@@ -1,7 +1,7 @@
-(ns crinklywrappr.aoc.2015.day6
+(ns crinklywrappr.aoc.2015.day06
   (:require [clojure.java.io :as io]))
 
-(def file (io/resource "2015/day6.txt"))
+(def file (io/resource "2015/day06.txt"))
 
 (def rgx #"toggle|off|on|\d+")
 
