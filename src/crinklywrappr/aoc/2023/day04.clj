@@ -25,15 +25,15 @@
 (defn part2 []
   (letfn [(score-card [[card winning scratched]]
             [card (count (st/intersection winning scratched))])
-          (scratchcards [[last-card copies] [card score]]
-            [card (merge-with + copies {card 1}
-                              (->> (range (inc card) (+ (inc card) score))
-                                   (reduce (fn [acc num]
-                                             (->> (get copies card 0)
-                                                  inc (assoc acc num)))
-                                           {})))])]
+          (scratchcards
+            ([[_ copies]] (apply + (vals copies)))
+            ([[last-card copies] [card score]]
+             [card (merge-with + copies {card 1}
+                               (->> (range (inc card) (+ (inc card) score))
+                                    (reduce (fn [acc num]
+                                              (->> (get copies card 0)
+                                                   inc (assoc acc num)))
+                                            {})))]))]
     (with-open [rdr (io/reader file)]
-      (->> (line-seq rdr)
-           (mapv (comp score-card parse-line))
-           (reduce scratchcards [0 {}])
-           second vals (apply +)))))
+      (-> (map (comp score-card parse-line))
+          (transduce scratchcards [0 {}] (line-seq rdr))))))
