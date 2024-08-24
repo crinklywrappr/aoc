@@ -27,10 +27,10 @@
   (parse-block? [_ block] "should the block be parsed?")
   (parse-block [_ block] "parses the block into tokens")
 
-  (continue? [_] "should we continue reading?")
-  (continue [_] "continue reading")
+  (include-token? [_ token] "should the token be included?")
 
-  (include-token? [_ token] "should the token be included?"))
+  (continue? [_ block tokens] "should we continue reading?")
+  (continue [_ block tokens] "continue reading.  returns a TokenReader."))
 
 (defrecord DelimiterReader [^BufferedReader rdr ^Character delimiter]
   TokenReader
@@ -49,9 +49,9 @@
              (sg/ends-with? block "\""))
       [(clojure.edn/read-string block)]
       [block]))
-  (continue? [_] true)
-  (continue [_])
   (include-token? [& _] true)
+  (continue? [_ _ _] true)
+  (continue [this _ _] this)
   Closeable
   (close [_] (.close rdr)))
 
@@ -66,8 +66,10 @@
       (if-let [tokens (when (parse-block? token-reader block)
                         (keep #(maybe-include-token token-reader %)
                               (parse-block token-reader block)))]
-        (concat tokens (lazy-seq (token-seq token-reader)))
-        (lazy-seq (token-seq token-reader))))))
+        (if (continue? token-reader block tokens)
+          (concat tokens (lazy-seq (token-seq (continue token-reader block tokens))))
+          tokens)
+        (lazy-seq (token-seq (continue token-reader block [])))))))
 
 ;; Stolen from Vincent Ho, who stole it from SO
 (defn re-pos [re s]
