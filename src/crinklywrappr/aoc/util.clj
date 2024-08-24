@@ -1,6 +1,8 @@
 (ns crinklywrappr.aoc.util
-  (:require [clojure.string :as sg])
-  (:import [java.io BufferedReader]))
+  (:require [clojure.string :as sg]
+            [clojure.string :as str]
+            [clojure.java.io :as io])
+  (:import [java.io BufferedReader Closeable]))
 
 (defn char-seq
   [^BufferedReader rdr]
@@ -17,22 +19,55 @@
      (cons line (lazy-seq (wrap-line-seq rdr after)))
      [after])))
 
-(defn chunk-seq
-  "Lazily transforms an input seq, chunk by chunk.
-     next-fn - takes an input seq which produces a 'chunk' from the seq.
-     advance? - fn which takes the chunk and the input seq, and returns a
-                boolean, whether to advance or not.
-     xform - when advance? returns true, transforms the chunk
-     rest-fn - takes the chunk and input seq, and 'advances' the input
-               seq to the next chunk
+(defprotocol TokenReader
+  "Allows you to define a (possibly stateful) Reader that produces tokens.
+  Tokens are produced from blocks.  A block may consist of one or more tokens."
+  (next-block [_] "produces the next block.  nil represents the end of the stream.")
 
-  Chunks are _concated_ onto the seq.  If you need a collection in the seq,
-  try wrapping the chunk in a vector."
-  [next-fn advance? rest-fn xform]
-  (fn chunk-seq' [xs]
-    (let [chunk (next-fn xs)]
-      (when (advance? chunk xs)
-        (concat (xform chunk) (lazy-seq (chunk-seq' (rest-fn chunk xs))))))))
+  (parse-block? [_ block] "should the block be parsed?")
+  (parse-block [_ block] "parses the block into tokens")
+
+  (continue? [_] "should we continue reading?")
+  (continue [_] "continue reading")
+
+  (include-token? [_ token] "should the token be included?"))
+
+(defrecord DelimiterReader [^BufferedReader rdr ^Character delimiter]
+  TokenReader
+  (next-block [_]
+    (let [bdel (byte delimiter)]
+      (loop [sb (StringBuilder.)]
+        (let [byte (.read rdr)]
+          (cond
+            (and (neg? byte) (zero? (.length sb))) nil
+            ;; 10 is \newline
+            (or (== byte 10) (neg? byte) (== byte bdel)) (sg/trim (str sb))
+            :else (recur (.append sb (char byte))))))))
+  (parse-block? [& _] true)
+  (parse-block [_ block]
+    (if (and (sg/starts-with? block "\"")
+             (sg/ends-with? block "\""))
+      [(clojure.edn/read-string block)]
+      [block]))
+  (continue? [_] true)
+  (continue [_])
+  (include-token? [& _] true)
+  Closeable
+  (close [_] (.close rdr)))
+
+(defn delimiter-reader [file delimiter]
+  (->DelimiterReader (io/reader file) delimiter))
+
+(letfn [(maybe-include-token [rdr token]
+          (when (include-token? rdr token)
+            token))]
+  (defn token-seq [token-reader]
+    (when-let [block (next-block token-reader)]
+      (if-let [tokens (when (parse-block? token-reader block)
+                        (keep #(maybe-include-token token-reader %)
+                              (parse-block token-reader block)))]
+        (concat tokens (lazy-seq (token-seq token-reader)))
+        (lazy-seq (token-seq token-reader))))))
 
 ;; Stolen from Vincent Ho, who stole it from SO
 (defn re-pos [re s]
