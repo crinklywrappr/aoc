@@ -12,14 +12,12 @@
        (> (+ a c) b)
        (> (+ b c) a)))
 
-(defn acc
-  ([] 0)
-  ([a] a)
-  ([a b] (if (valid-triangle? b) (inc a) a)))
+(defn acc [a b]
+  (if (valid-triangle? b) (inc a) a))
 
 (defn part1 []
   (with-open [rdr (io/reader file)]
-    (transduce (map parse) acc (line-seq rdr))))
+    (transduce (map parse) (completing acc) 0 (line-seq rdr))))
 
 (defn parse-triplets [[t1 t2 t3]]
   (let [[a b c] t1
@@ -34,4 +32,4 @@
       (map parse)
       (partition-all 3)
       (mapcat parse-triplets))
-     acc (line-seq rdr))))
+     (completing acc) 0 (line-seq rdr))))
