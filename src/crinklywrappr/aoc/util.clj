@@ -107,3 +107,9 @@
       (gcd x y)))
   ([x y & more]
    (reduce lcm (lcm x y) more)))
+
+(defn pluck
+  "Returns a seq with the element in vector v at index i removed"
+  [v i]
+  (concat (subvec v 0 i)
+          (subvec v (inc i))))

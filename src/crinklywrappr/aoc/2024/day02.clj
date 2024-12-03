@@ -1,5 +1,6 @@
 (ns crinklywrappr.aoc.2024.day02
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [crinklywrappr.aoc.util :as util]))
 
 (def file (io/resource "2024/day02.txt"))
 
@@ -38,10 +39,6 @@
          (completing count-valid-reports)
          0 (line-seq rdr)))))
 
-(defn poke [v i]
-  (concat (subvec v 0 i)
-          (subvec v (inc i))))
-
 (defn acceptable-report? [xs]
   (let [[valid? idx] (first-fault xs)]
     (cond
@@ -49,12 +46,12 @@
 
       (and (not valid?) (zero? idx))
       (or (first (first-fault (rest xs)))
-          (first (first-fault (poke xs (inc idx)))))
+          (first (first-fault (util/pluck xs (inc idx)))))
 
       :else
-      (or (first (first-fault (poke xs (dec idx))))
-          (first (first-fault (poke xs idx)))
-          (first (first-fault (poke xs (inc idx))))))))
+      (or (first (first-fault (util/pluck xs (dec idx))))
+          (first (first-fault (util/pluck xs idx)))
+          (first (first-fault (util/pluck xs (inc idx))))))))
 
 (defn count-acceptable-reports [n report]
   (if (acceptable-report? report)
