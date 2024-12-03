@@ -7,25 +7,21 @@
 (defn parse-line [line]
   (mapv parse-long (re-seq #"\d+" line)))
 
-(defn valid-asc-level? [[b i x] y]
-  (if (and (< x y) (< (- y x) 4))
+(defn valid-asc? [x y]
+  (and (< x y) (< (- y x) 4)))
+
+(defn valid-desc? [x y]
+  (and (> x y) (< (- x y) 4)))
+
+(defn valid-level?
+  [valid? [b i x] y]
+  (if (valid? x y)
     [true (inc i) y]
     (reduced [false i x])))
 
-(defn valid-desc-level? [[b i x] y]
-  (if (and (> x y) (< (- x y) 4))
-    [true (inc i) y]
-    (reduced [false i x])))
-
-(defn choose-validator [[x y & _]]
-  (if (> x y)
-    valid-desc-level?
-    valid-asc-level?))
-
-(defn first-fault [xs]
-  (reduce (choose-validator xs)
-          [true 0 (first xs)]
-          (rest xs)))
+(defn first-fault [[x & xs]]
+  (let [f (if (> x (first xs)) valid-desc? valid-asc?)]
+    (reduce (partial valid-level? f) [true 0 x] xs)))
 
 (defn count-valid-reports [n report]
   (if (first (first-fault report))
