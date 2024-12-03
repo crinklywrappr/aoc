@@ -7,60 +7,50 @@
 (defn parse-line [line]
   (mapv parse-long (re-seq #"\d+" line)))
 
-(defn valid-asc-level? [[b i x] y]
-  (if (and (< x y) (< (- y x) 4))
+(defn valid-asc? [x y]
+  (and (< x y) (< (- y x) 4)))
+
+(defn valid-desc? [x y]
+  (and (> x y) (< (- x y) 4)))
+
+(defn valid-level?
+  [valid? [b i x] y]
+  (if (valid? x y)
     [true (inc i) y]
     (reduced [false i x])))
 
-(defn valid-desc-level? [[b i x] y]
-  (if (and (> x y) (< (- x y) 4))
-    [true (inc i) y]
-    (reduced [false i x])))
+(defn first-fault [[x & xs]]
+  (let [f (if (> x (first xs)) valid-desc? valid-asc?)]
+    (reduce (partial valid-level? f) [true 0 x] xs)))
 
-(defn choose-validator [[x y & _]]
-  (if (> x y)
-    valid-desc-level?
-    valid-asc-level?))
-
-(defn first-fault [xs]
-  (reduce (choose-validator xs)
-          [true 0 (first xs)]
-          (rest xs)))
-
-(defn count-valid-reports [n report]
-  (if (first (first-fault report))
-    (inc n)
-    n))
+(defn count-safe-reports [safe? n report]
+  (if (safe? report) (inc n) n))
 
 (defn part1 []
   (with-open [rdr (io/reader file)]
     (-> (map parse-line)
         (transduce
-         (completing count-valid-reports)
+         (completing (partial count-safe-reports
+                        #(first (first-fault %))))
          0 (line-seq rdr)))))
 
-(defn acceptable-report? [xs]
-  (let [[valid? idx] (first-fault xs)]
+(defn acceptable-report? [report]
+  (let [[valid? idx] (first-fault report)]
     (cond
       valid? true
 
       (and (not valid?) (zero? idx))
-      (or (first (first-fault (rest xs)))
-          (first (first-fault (util/pluck xs (inc idx)))))
+      (or (first (first-fault (rest report)))
+          (first (first-fault (util/pluck report (inc idx)))))
 
       :else
-      (or (first (first-fault (util/pluck xs (dec idx))))
-          (first (first-fault (util/pluck xs idx)))
-          (first (first-fault (util/pluck xs (inc idx))))))))
-
-(defn count-acceptable-reports [n report]
-  (if (acceptable-report? report)
-    (inc n)
-    n))
+      (or (first (first-fault (util/pluck report (dec idx))))
+          (first (first-fault (util/pluck report idx)))
+          (first (first-fault (util/pluck report (inc idx))))))))
 
 (defn part2 []
   (with-open [rdr (io/reader file)]
     (-> (map parse-line)
         (transduce
-         (completing count-acceptable-reports)
+         (completing (partial count-safe-reports acceptable-report?))
          0 (line-seq rdr)))))
