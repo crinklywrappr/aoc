@@ -25,7 +25,7 @@
 (defn part1 []
   (with-open [rdr (io/reader file)]
     (let [wrap (apply str (repeat 140 \.))
-          lines (util/wrap-line-seq rdr wrap)]
+          lines (util/wrap-line-seq rdr [wrap])]
       (first (reduce part-numbers [0 wrap (first lines)] (rest lines))))))
 
 (defn number-adjacent? [symbol [[minimum maximum] _]]
@@ -59,5 +59,5 @@
 (defn part2 []
   (with-open [rdr (io/reader file)]
     (let [wrap (apply str (repeat 140 \.))
-          lines (util/wrap-line-seq rdr wrap)]
+          lines (util/wrap-line-seq rdr [wrap])]
       (first (reduce gear-ratios [0 wrap (first lines)] (rest lines))))))

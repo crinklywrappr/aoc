@@ -11,13 +11,13 @@
       (cons (char byte) (lazy-seq (char-seq rdr))))))
 
 (defn wrap-line-seq
-  "prepends and/or appends a line to the file when reading"
+  "prepends and/or appends lines to the file when reading"
   ([^BufferedReader rdr before after]
    (cons before (lazy-seq (wrap-line-seq rdr after))))
   ([^BufferedReader rdr after]
    (if-let [line (.readLine rdr)]
      (cons line (lazy-seq (wrap-line-seq rdr after)))
-     [after])))
+     after)))
 
 (defprotocol TokenReader
   "Allows you to define a (possibly stateful) Reader that produces tokens.
