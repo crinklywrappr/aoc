@@ -47,7 +47,8 @@
                    [0 {} {}] (line-seq rdr))
         first)))
 
-(defn page-comparator [before after a b]
+(defn page-comparator
+  [before after a b]
   (cond
     (contains? (get before a) b) -1
     (contains? (get before b) a) 1
