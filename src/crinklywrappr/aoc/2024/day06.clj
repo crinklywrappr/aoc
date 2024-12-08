@@ -5,8 +5,8 @@
 (def file (io/resource "2024/day06.txt"))
 (def sz 129)
 
-(defn parse-line [line]
-  (util/re-pos #"#|\^" line))
+(defn parse-line [row line]
+  [row (util/re-pos #"#|\^" line)])
 
 (defn turn-right [dir]
   (case dir
@@ -53,15 +53,14 @@
      pos]
     [by-row by-col [row-no k]]))
 
-(defn accrue-state [[state row-no] obstacles]
-  [(reduce (partial add-row row-no) state obstacles) (inc row-no)])
+(defn accrue-state [state [row obstacles]]
+  (reduce (partial add-row row) state obstacles))
 
 (defn build-state []
   (with-open [rdr (io/reader file)]
-    (-> (map parse-line)
+    (-> (map-indexed parse-line)
         (transduce (completing accrue-state)
-                   [[{} {} nil] 0] (line-seq rdr))
-        first)))
+                   [{} {} nil] (line-seq rdr)))))
 
 (defn visit [a [[row col] [row' col']]]
   (if (== row row')
