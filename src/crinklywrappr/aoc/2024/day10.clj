@@ -18,9 +18,8 @@
 
 (defn top? [[_ _ e]] (== e 9))
 
-(defn trailhead?
-  ([[_ _ e]] (== e 0))
-  ([row col] (zero? (elevation-at row col))))
+(defn trailhead? [row col]
+  (zero? (elevation-at row col)))
 
 (defn graph [row col]
   (z/zipper
