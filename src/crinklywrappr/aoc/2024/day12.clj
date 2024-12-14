@@ -78,14 +78,22 @@
         [(inc total) coord]))
     [1 (first partial-coords)] (rest partial-coords))))
 
+(defn side-comparator [primary secondary]
+  (fn cmp [a b]
+    (cond
+      (< (primary a) (primary b)) -1
+      (> (primary a) (primary b)) 1
+      (< (secondary a) (secondary b)) -1
+      (> (secondary a) (secondary b)) 1
+      :else 0)))
+
 (defn count-sides [dir grouping-fn keyfn borders]
   (->> borders
-       (filter (fn [[_ _ _ b]] (contains? b dir)))
-       (group-by grouping-fn) vals
-       (map (comp count-sides'
-               (partial sort <)
-               (partial map keyfn)))
-       (apply +)))
+       (filterv (fn [[_ _ _ b]] (contains? b dir)))
+       (sort (side-comparator grouping-fn keyfn))
+       (transduce (comp (partition-by grouping-fn)
+                     (map (comp count-sides' (partial map keyfn))))
+                  +)))
 
 (defn fence-price [g]
   (loop [area 0 borders [] g g]
