@@ -1,8 +1,10 @@
 (ns crinklywrappr.aoc.util
-  (:require [clojure.string :as sg]
-            [clojure.string :as str]
-            [clojure.java.io :as io])
-  (:import [java.io BufferedReader Closeable]))
+  (:require [clojure.edn :as edn]
+            [clojure.string :as sg]
+            [clojure.java.io :as io]
+            [crinklywrappr.aoc.readers.cyclic-input-stream :refer [cyclic-input-stream]])
+  (:import [java.io BufferedReader Closeable File RandomAccessFile]
+           [java.net URL URI]))
 
 (defn char-seq
   [^BufferedReader rdr]
@@ -47,7 +49,7 @@
   (parse-block [_ block]
     (if (and (sg/starts-with? block "\"")
              (sg/ends-with? block "\""))
-      [(clojure.edn/read-string block)]
+      [(edn/read-string block)]
       [block]))
   (include-token? [& _] true)
   (continue? [_ _ _] true)
@@ -113,3 +115,44 @@
   [v i]
   (concat (subvec v 0 i)
           (subvec v (inc i))))
+
+(defn extract-resource [url]
+  (let [tmp (File/createTempFile "crinklywrappr-aoc" ".tmp")]
+    (with-open [in (.openStream url)
+                out (io/output-stream tmp)]
+      (io/copy in out))
+    (.deleteOnExit tmp)
+    tmp))
+
+(defn random-access-file-reader [^File file]
+  (when (and (.isFile file) (.exists file))
+    (RandomAccessFile. file "r")))
+
+(defprotocol ExtraCoercions
+  (^RandomAccessFile as-raf [x] "coerce to a read-only random access file"))
+
+(extend-protocol ExtraCoercions
+  nil
+  (as-raf [_] nil)
+
+  String
+  (as-raf [s] (as-raf (io/file s)))
+
+  File
+  (as-raf [f] (random-access-file-reader f))
+
+  URL
+  (as-raf [u]
+    (case (.getProtocol u)
+      "file" (as-raf (io/file u))
+      "jar" (as-raf (extract-resource u))
+      (throw (IllegalArgumentException. (str "Not a file: " u)))))
+
+  URI
+  (as-raf [u] (as-raf (io/as-url u))))
+
+(defn cyclic-reader [source]
+  (-> source as-raf cyclic-input-stream io/reader))
+
+(defn split-string [i s]
+  [(subs s 0 i) (subs s i)])
