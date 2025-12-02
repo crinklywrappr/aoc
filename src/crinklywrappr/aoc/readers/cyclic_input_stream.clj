@@ -19,12 +19,32 @@
       ([b]
        (.read this b 0 (alength ^bytes b)))
       ([^bytes b off len]
-       (let [n (.read raf b off len)]
-         (if (neg? n)
+       (let [pos (.getFilePointer raf)
+             file-size (.length raf)]
+         (if (< file-size len)
            (do
-             (.seek raf 0)
-             (.read raf b off len))
-           n))))
+             ;; 1. read entire file
+             (if (zero? (.getFilePointer raf))
+               (.read raf b off len)
+               (let [n (.read raf b off len)]
+                 (.seek raf 0)
+                 (.read raf b (+ off n) (- len n))))
+             ;; 2. copy array repeatedly
+             (loop [offset (+ off file-size)
+                    written file-size
+                    remaining (- len file-size)]
+               (if (<= remaining written)
+                 (do (System/arraycopy b off b offset remaining)
+                     (.seek raf (mod (+ pos len) file-size))) ;; 3. seek to new position
+                 (do (System/arraycopy b off b offset written)
+                     (recur (+ offset written)
+                            (+ written written)
+                            (- remaining written))))))
+           (let [n (.read raf b off len)]
+             (when (< n len)
+               (.seek raf 0)
+               (.read raf b (+ off len) (- len n)))))
+         len)))
 
     (available []
       (let [pos (.getFilePointer raf)
