@@ -43,7 +43,7 @@
            (let [n (.read raf b off len)]
              (when (< n len)
                (.seek raf 0)
-               (.read raf b (+ off len) (- len n)))))
+               (.read raf b (+ off n) (- len n)))))
          len)))
 
     (available []
