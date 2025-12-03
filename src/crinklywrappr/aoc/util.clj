@@ -154,10 +154,8 @@
 (defn cyclic-reader [source]
   (-> source as-raf cyclic-input-stream io/reader))
 
-(defn split-string [i s & {:keys [omit?] :or {omit? false}}]
-  (if omit?
-    [(subs s 0 i) (subs s (min (count s) (inc i)))]
-    [(subs s 0 i) (subs s i)]))
+(defn split-string [i s]
+  [(subs s 0 i) (subs s i)])
 
 (defn hamming-distance [s1 s2]
   (apply + (map (fn [c1 c2] (if (= c1 c2) 0 1)) s1 s2)))

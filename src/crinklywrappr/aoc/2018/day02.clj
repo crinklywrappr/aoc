@@ -17,11 +17,11 @@
       (fn [agg] (* (get agg 2) (get agg 3))))
      {2 0 3 0} (line-seq rdr))))
 
-(defn non-matching-index [s1 s2]
-  (->> [s1 s2]
-       (apply map (fn [c1 c2] (if (= c1 c2) 0 1)))
-       (keep-indexed (fn [i x] (when (pos? x) i)))
-       first))
+(defn match? [c1 c2]
+  (when (= c1 c2) c1))
+
+(defn matching-chars [s1 s2]
+  (apply str (filter some? (map match? s1 s2))))
 
 (defn part2 []
   (let [lines (with-open [rdr (io/reader file)] (doall (line-seq rdr)))]
@@ -29,4 +29,4 @@
      (for [s1 lines
            s2 (rest lines)
            :when (== (util/hamming-distance s1 s2) 1)]
-       (apply str (util/split-string (non-matching-index s1 s2) s1 :omit? true))))))
+       (matching-chars s1 s2)))))
