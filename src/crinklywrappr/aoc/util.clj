@@ -2,7 +2,8 @@
   (:require [clojure.edn :as edn]
             [clojure.string :as sg]
             [clojure.java.io :as io]
-            [crinklywrappr.aoc.readers.cyclic-input-stream :refer [cyclic-input-stream]])
+            [crinklywrappr.aoc.readers.cyclic-input-stream :refer [cyclic-input-stream]]
+            [crinklywrappr.aoc.readers.token-reader :as token])
   (:import [java.io BufferedReader Closeable File RandomAccessFile]
            [java.net URL URI]))
 
@@ -21,57 +22,9 @@
      (cons line (lazy-seq (wrap-line-seq rdr after)))
      after)))
 
-(defprotocol TokenReader
-  "Allows you to define a (possibly stateful) Reader that produces tokens.
-  Tokens are produced from blocks.  A block may consist of one or more tokens."
-  (next-block [_] "produces the next block.  nil represents the end of the stream.")
-
-  (parse-block? [_ block] "should the block be parsed?")
-  (parse-block [_ block] "parses the block into tokens")
-
-  (include-token? [_ token] "should the token be included?")
-
-  (continue? [_ block tokens] "should we continue reading?")
-  (continue [_ block tokens] "continue reading.  returns a TokenReader."))
-
-(defrecord DelimiterReader [^BufferedReader rdr ^Character delimiter]
-  TokenReader
-  (next-block [_]
-    (let [bdel (byte delimiter)]
-      (loop [sb (StringBuilder.)]
-        (let [byte (.read rdr)]
-          (cond
-            (and (neg? byte) (zero? (.length sb))) nil
-            ;; 10 is \newline
-            (or (== byte 10) (neg? byte) (== byte bdel)) (sg/trim (str sb))
-            :else (recur (.append sb (char byte))))))))
-  (parse-block? [& _] true)
-  (parse-block [_ block]
-    (if (and (sg/starts-with? block "\"")
-             (sg/ends-with? block "\""))
-      [(edn/read-string block)]
-      [block]))
-  (include-token? [& _] true)
-  (continue? [_ _ _] true)
-  (continue [this _ _] this)
-  Closeable
-  (close [_] (.close rdr)))
-
-(defn delimiter-reader [file delimiter]
-  (->DelimiterReader (io/reader file) delimiter))
-
-(letfn [(maybe-include-token [rdr token]
-          (when (include-token? rdr token)
-            token))]
-  (defn token-seq [token-reader]
-    (when-let [block (next-block token-reader)]
-      (if-let [tokens (when (parse-block? token-reader block)
-                        (keep #(maybe-include-token token-reader %)
-                              (parse-block token-reader block)))]
-        (if (continue? token-reader block tokens)
-          (concat tokens (lazy-seq (token-seq (continue token-reader block tokens))))
-          tokens)
-        (lazy-seq (token-seq (continue token-reader block [])))))))
+(defn token-seq [token-reader]
+  (when-let [token (token/read-token token-reader)]
+    (cons token (lazy-seq (token-seq token-reader)))))
 
 ;; Stolen from Vincent Ho, who stole it from SO
 (defn re-pos [re s]
@@ -153,6 +106,11 @@
 
 (defn cyclic-reader [source]
   (-> source as-raf cyclic-input-stream io/reader))
+
+(defn delimiter-reader
+  "defaults to ,"
+  [source & {:keys [delimiter] :or {delimiter \,}}]
+  (-> source io/reader (token/delimiter-reader delimiter)))
 
 (defn split-string [i s]
   [(subs s 0 i) (subs s i)])

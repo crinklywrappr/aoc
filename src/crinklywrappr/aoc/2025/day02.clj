@@ -43,17 +43,15 @@
   (apply + total (more-invalid-ids-between from to)))
 
 (defn part1 []
-  (with-open [rdr (util/delimiter-reader file \,)]
+  (with-open [rdr (util/delimiter-reader file)]
     (transduce
-     (comp (filter seq)
-        (map parse-token))
+     (map parse-token)
      (completing sum-invalid-ids)
      0 (util/token-seq rdr))))
 
 (defn part2 []
-  (with-open [rdr (util/delimiter-reader file \,)]
+  (with-open [rdr (util/delimiter-reader file)]
     (transduce
-     (comp (filter seq)
-           (map parse-token))
+     (map parse-token)
      (completing sum-more-invalid-ids)
      0 (util/token-seq rdr))))

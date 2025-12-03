@@ -23,7 +23,7 @@
      [:west \L] [[x (+ y steps)] :south])))
 
 (defn part1 []
-  (with-open [rdr (util/delimiter-reader file \,)]
+  (with-open [rdr (util/delimiter-reader file)]
     (transduce (map parse) visit [[0 0] :north] (util/token-seq rdr))))
 
 (defn visited? [old-coords new-coords prior-path]
@@ -39,5 +39,5 @@
        (vec (cons (conj visited coords) new-state))))))
 
 (defn part2 []
-  (with-open [rdr (util/delimiter-reader file \,)]
+  (with-open [rdr (util/delimiter-reader file)]
     (transduce (map parse) track [[[0 0]] [0 0] :north] (util/token-seq rdr))))
