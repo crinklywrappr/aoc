@@ -18,4 +18,3 @@
               :else (recur (.append sb (char b)))))))
       Closeable
       (close [_] (.close rdr)))))
-

@@ -16,7 +16,7 @@
 (defn wrap-line-seq
   "prepends and/or appends lines to the file when reading"
   ([^BufferedReader rdr before after]
-   (cons before (lazy-seq (wrap-line-seq rdr after))))
+   (lazy-cat before (lazy-seq (wrap-line-seq rdr after))))
   ([^BufferedReader rdr after]
    (if-let [line (.readLine rdr)]
      (cons line (lazy-seq (wrap-line-seq rdr after)))
