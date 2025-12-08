@@ -117,3 +117,11 @@
 
 (defn hamming-distance [s1 s2]
   (apply + (map (fn [c1 c2] (if (= c1 c2) 0 1)) s1 s2)))
+
+(defn freqs [f xs]
+  (persistent!
+   (reduce
+    (fn [a b]
+      (let [res (f b)]
+        (assoc! a res (inc (get a res 0)))))
+    (transient {}) xs)))
